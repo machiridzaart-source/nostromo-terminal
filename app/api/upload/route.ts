@@ -7,6 +7,9 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
+// Configure route for larger file uploads (max 300 seconds for processing)
+export const maxDuration = 300
+
 export async function POST(request: Request) {
     try {
         console.log('=== UPLOAD ENDPOINT REACHED ===')

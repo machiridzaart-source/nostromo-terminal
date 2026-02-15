@@ -151,6 +151,17 @@ function ProjectEditor() {
         const file = e.target.files?.[0]
         if (!file) return
         
+        // Validate file size
+        const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+        const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
+        const maxSize = field === 'image' ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE
+        
+        if (file.size > maxSize) {
+            const sizeMB = (maxSize / (1024 * 1024)).toFixed(0)
+            setUploadError(`File too large! Maximum size is ${sizeMB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`)
+            return
+        }
+        
         if (field === 'image') {
             setSelectedImageFile(file)
         } else {
@@ -298,8 +309,9 @@ function ProjectEditor() {
                             </button>
                         </div>
                         {selectedImageFile && !uploadingField && (
-                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedImageFile.name}</div>
+                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedImageFile.name} ({(selectedImageFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
                         )}
+                        <div className="text-[9px] text-muted-foreground/60 mt-1">Max image size: 10MB</div>
                         {uploadingField === 'image' && (
                             <div className="text-xs text-accent animate-pulse mt-2">► UPLOADING IMAGE...</div>
                         )}
@@ -348,8 +360,9 @@ function ProjectEditor() {
                             </button>
                         </div>
                         {selectedVideoFile && !uploadingField && (
-                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedVideoFile.name}</div>
+                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedVideoFile.name} ({(selectedVideoFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
                         )}
+                        <div className="text-[9px] text-muted-foreground/60 mt-1">Max video size: 100MB</div>
                         {uploadingField === 'video' && (
                             <div className="text-xs text-accent animate-pulse mt-2">► UPLOADING VIDEO...</div>
                         )}
@@ -604,6 +617,18 @@ function GalleryEditor() {
         const file = e.target.files?.[0]
         if (!file) return
         
+        // Validate file size
+        const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+        const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
+        const isVideo = file.type.startsWith('video')
+        const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
+        
+        if (file.size > maxSize) {
+            const sizeMB = (maxSize / (1024 * 1024)).toFixed(0)
+            setUploadError(`File too large! Maximum size is ${sizeMB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`)
+            return
+        }
+        
         setSelectedMediaFile(file)
         setUploadError(null)
     }
@@ -773,8 +798,9 @@ function GalleryEditor() {
                             </button>
                         </div>
                         {selectedMediaFile && !uploading && (
-                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedMediaFile.name}</div>
+                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedMediaFile.name} ({(selectedMediaFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
                         )}
+                        <div className="text-[9px] text-muted-foreground/60 mt-1">Max image: 10MB | Max video: 100MB</div>
                         {uploading && (
                             <div className="text-xs text-accent animate-pulse mt-2">► UPLOADING MEDIA...</div>
                         )}
