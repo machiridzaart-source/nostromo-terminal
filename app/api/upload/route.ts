@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
-import { writeFile } from 'fs/promises'
-import path from 'path'
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export async function POST(request: Request) {
     try {
@@ -14,21 +19,32 @@ export async function POST(request: Request) {
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
 
-        // Create unique filename
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        const ext = path.extname(file.name)
-        const filename = file.name.replace(ext, '') + '-' + uniqueSuffix + ext
-        const uploadDir = path.join(process.cwd(), 'public/uploads')
-        const filepath = path.join(uploadDir, filename)
+        // Upload to Cloudinary
+        const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: 'auto',
+                    folder: 'nostromo-terminal',
+                    public_id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                },
+                (error, result) => {
+                    if (error) reject(error)
+                    else resolve(result)
+                }
+            )
 
-        await writeFile(filepath, buffer)
+            uploadStream.end(buffer)
+        })
 
-        // Return the public URL
-        const publicUrl = `/uploads/${filename}`
-
-        return NextResponse.json({ success: true, url: publicUrl })
+        return NextResponse.json({
+            success: true,
+            url: (result as any).secure_url,
+        })
     } catch (error) {
         console.error('Upload error:', error)
-        return NextResponse.json({ success: false, message: 'Upload failed' }, { status: 500 })
+        return NextResponse.json(
+            { success: false, message: 'Upload failed', details: String(error) },
+            { status: 500 }
+        )
     }
 }
