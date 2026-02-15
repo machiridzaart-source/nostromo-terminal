@@ -312,7 +312,7 @@ function ProjectEditor() {
                         <label className="text-[10px] text-muted-foreground mb-2">PROJECT IMAGE</label>
                         {editingProject.image && (
                             <div className="mb-3">
-                                <img key={editingProject.image} src={editingProject.image} alt="Preview" className="h-20 w-32 object-cover border border-accent/30" onError={() => console.error('Image failed to load:', editingProject.image)} />
+                                <img key={editingProject.image} src={editingProject.image} alt="Preview" crossOrigin="anonymous" className="h-20 w-32 object-cover border border-accent/30" onError={() => console.error('Image failed to load:', editingProject.image)} />
                                 <div className="text-[9px] text-accent mt-2">✓ Image uploaded</div>
                             </div>
                         )}
@@ -363,7 +363,7 @@ function ProjectEditor() {
                         </div>
                         {editingProject.video && !selectedVideoFile && (
                             <div className="mb-3">
-                                <video key={editingProject.video} src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video failed to load:', editingProject.video)} />
+                                <video key={editingProject.video} src={editingProject.video} crossOrigin="anonymous" preload="metadata" className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video failed to load:', editingProject.video)} />
                                 <div className="text-[9px] text-accent mt-2">✓ Video ready</div>
                             </div>
                         )}
@@ -446,7 +446,7 @@ function ProjectEditor() {
                         <div key={p.id} className="flex items-center justify-between p-3 bg-background/20 border border-border hover:border-accent/30 transition-colors group">
                             <div className="flex items-center gap-3">
                                 {p.image ? (
-                                    <img src={p.image} className="w-8 h-8 object-cover border border-border" />
+                                    <img src={p.image} crossOrigin="anonymous" className="w-8 h-8 object-cover border border-border" />
                                 ) : (
                                     <div className="w-8 h-8 bg-foreground/5 border border-border" />
                                 )}
@@ -784,8 +784,8 @@ function GalleryEditor() {
                         {editingItem.mediaUrl && (
                             <div className="mb-3">
                                 {editingItem.mediaType === 'video' ?
-                                    <video key={editingItem.mediaUrl} src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video preview failed:', editingItem.mediaUrl)} /> :
-                                    <img key={editingItem.mediaUrl} src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" onError={() => console.error('Image preview failed:', editingItem.mediaUrl)} />
+                                    <video key={editingItem.mediaUrl} src={editingItem.mediaUrl} crossOrigin="anonymous" preload="metadata" className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video preview failed:', editingItem.mediaUrl)} /> :
+                                    <img key={editingItem.mediaUrl} src={editingItem.mediaUrl} crossOrigin="anonymous" className="h-20 w-32 object-cover border border-accent/30" onError={() => console.error('Image preview failed:', editingItem.mediaUrl)} />
                                 }
                                 <div className="text-[9px] text-accent mt-2">✓ Media ready</div>
                             </div>
@@ -868,8 +868,8 @@ function GalleryEditor() {
                                 <div className="w-8 h-8 bg-foreground/5 border border-border overflow-hidden">
                                     {p.mediaUrl ? (
                                         p.mediaType === 'video' ? 
-                                            <video src={p.mediaUrl} className="w-full h-full object-cover" muted /> : 
-                                            <img src={p.mediaUrl} className="w-full h-full object-cover" alt={p.title} />
+                                            <video key={p.mediaUrl} src={p.mediaUrl} crossOrigin="anonymous" preload="metadata" className="w-full h-full object-cover" muted /> : 
+                                            <img key={p.mediaUrl} src={p.mediaUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt={p.title} />
                                     ) : null}
                                 </div>
                                 <div>

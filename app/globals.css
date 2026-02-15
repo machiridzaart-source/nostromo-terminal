@@ -412,3 +412,11 @@
       transparent 100%);
   -webkit-mask-composite: source-in;
 }
+
+/* Disable mask on mobile for better performance */
+@media (max-width: 768px) {
+  .media-fade-edges {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}

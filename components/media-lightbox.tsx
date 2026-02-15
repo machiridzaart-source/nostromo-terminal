@@ -138,6 +138,8 @@ export function MediaLightbox({ item, allItems, onClose, onNavigate }: MediaLigh
                   loop
                   playsInline
                   controls
+                  preload="metadata"
+                  crossOrigin="anonymous"
                   className="max-w-full max-h-full w-auto h-auto media-fade-edges"
                 />
               ) : (
@@ -145,6 +147,7 @@ export function MediaLightbox({ item, allItems, onClose, onNavigate }: MediaLigh
                   ref={imageRef}
                   src={item.mediaUrl}
                   alt={item.title}
+                  crossOrigin="anonymous"
                   className="media-fade-edges select-none transition-transform"
                   style={{
                     transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,

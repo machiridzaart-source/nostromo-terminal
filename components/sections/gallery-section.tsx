@@ -73,10 +73,12 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
               muted
               loop
               playsInline
+              preload="metadata"
+              crossOrigin="anonymous"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity media-fade-edges"
             />
           ) : (
-            <img src={piece.mediaUrl} alt={piece.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity media-fade-edges" />
+            <img src={piece.mediaUrl} alt={piece.title} crossOrigin="anonymous" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity media-fade-edges" />
           )
         ) : (
           /* Fallback Pattern if no media */

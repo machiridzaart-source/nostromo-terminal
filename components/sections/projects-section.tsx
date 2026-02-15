@@ -119,12 +119,14 @@ export function ProjectsSection() {
                 muted
                 loop
                 playsInline
+                preload="metadata"
+                crossOrigin="anonymous"
                 className="w-full h-auto opacity-90 hover:opacity-100 transition-opacity media-fade-edges"
               />
             </div>
           ) : selectedProject.image ? (
             <div className="mt-6 p-1 bg-background/20">
-              <img src={selectedProject.image} alt={selectedProject.title} className="w-full h-auto opacity-80 hover:opacity-100 transition-opacity media-fade-edges" />
+              <img src={selectedProject.image} alt={selectedProject.title} crossOrigin="anonymous" className="w-full h-auto opacity-80 hover:opacity-100 transition-opacity media-fade-edges" />
             </div>
           ) : null}
 
@@ -153,8 +155,8 @@ export function ProjectsSection() {
                                 <CarouselItem key={idx}>
                                   <div className="relative aspect-video w-full overflow-hidden bg-black/50">
                                     {item.type === 'video' ?
-                                      <video src={item.url} className="w-full h-full object-contain media-fade-edges" controls playsInline /> :
-                                      <img src={item.url} className="w-full h-full object-contain media-fade-edges" alt="" />
+                                      <video src={item.url} preload="metadata" crossOrigin="anonymous" className="w-full h-full object-contain media-fade-edges" controls playsInline /> :
+                                      <img src={item.url} crossOrigin="anonymous" className="w-full h-full object-contain media-fade-edges" alt="" />
                                     }
                                   </div>
                                 </CarouselItem>
@@ -166,8 +168,8 @@ export function ProjectsSection() {
                         ) : (
                           <div className="w-full p-1 bg-background/10">
                             {section.media[0].type === 'video' ?
-                              <video src={section.media[0].url} className="w-full h-auto opacity-90 media-fade-edges" controls playsInline /> :
-                              <img src={section.media[0].url} className="w-full h-auto opacity-90 media-fade-edges" />
+                              <video src={section.media[0].url} preload="metadata" crossOrigin="anonymous" className="w-full h-auto opacity-90 media-fade-edges" controls playsInline /> :
+                              <img src={section.media[0].url} crossOrigin="anonymous" className="w-full h-auto opacity-90 media-fade-edges" />
                             }
                           </div>
                         )}
@@ -308,7 +310,7 @@ export function ProjectsSection() {
               </div>
             ) : project.image ? (
               <div className="mb-3 w-full h-24 overflow-hidden opacity-60 group-hover:opacity-90 transition-opacity">
-                <img src={project.image} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all media-fade-edges" />
+                <img src={project.image} alt="" crossOrigin="anonymous" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all media-fade-edges" />
               </div>
             ) : null}
 
