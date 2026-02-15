@@ -549,8 +549,10 @@ function GalleryEditor() {
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
+    const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null)
     const galleryImageWidgetRef = useRef<any>(null)
     const galleryVideoWidgetRef = useRef<any>(null)
+    const mediaInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => { fetchGallery(); initializeGalleryCloudinaryWidgets() }, [])
 
@@ -706,23 +708,45 @@ function GalleryEditor() {
                                 <div className="text-[9px] text-accent mt-2">✓ Media ready</div>
                             </div>
                         )}
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={openGalleryImageUpload}
-                                disabled={uploading}
-                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
-                            >
-                                {uploading ? 'UPLOADING...' : 'UPLOAD IMAGE'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={openGalleryVideoUpload}
-                                disabled={uploading}
-                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
-                            >
-                                {uploading ? 'UPLOADING...' : 'UPLOAD VIDEO'}
-                            </button>
+                        <div className="flex flex-col gap-3">
+                            <div className="border border-border/50 p-3 bg-background/10">
+                                <label className="text-[9px] text-muted-foreground mb-2 block">SELECT IMAGE OR VIDEO FILE</label>
+                                <input 
+                                    ref={mediaInputRef}
+                                    type="file" 
+                                    accept="image/*,video/*" 
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        setSelectedMediaFile(file || null)
+                                        setUploadError(null)
+                                    }}
+                                    className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer w-full"
+                                />
+                                {selectedMediaFile && (
+                                    <div className="text-[9px] text-accent mt-2">
+                                        ✓ Selected: {selectedMediaFile.name} ({(selectedMediaFile.size / (1024 * 1024)).toFixed(2)}MB)
+                                        <br/>Type: {selectedMediaFile.type.startsWith('video') ? 'VIDEO' : 'IMAGE'}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={openGalleryImageUpload}
+                                    disabled={uploading}
+                                    className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1"
+                                >
+                                    {uploading ? 'UPLOADING...' : 'UPLOAD IMAGE'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={openGalleryVideoUpload}
+                                    disabled={uploading}
+                                    className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1"
+                                >
+                                    {uploading ? 'UPLOADING...' : 'UPLOAD VIDEO'}
+                                </button>
+                            </div>
                         </div>
                         <div className="text-[9px] text-muted-foreground/60 mt-2">Direct upload to cloud • Images: 50MB | Videos: 1GB</div>
                         {uploading && (
