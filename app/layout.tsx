@@ -29,6 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={ibmPlexMono.variable}>
+      <head>
+        <script src="https://upload-widget.cloudinary.com/latest/sources/index.js" async></script>
+      </head>
       <body className="font-mono antialiased">{children}</body>
     </html>
   )

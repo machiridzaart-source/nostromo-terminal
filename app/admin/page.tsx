@@ -101,10 +101,79 @@ function ProjectEditor() {
     const [uploadingField, setUploadingField] = useState<'image' | 'video' | null>(null)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
-    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
-    const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null)
-    const imageInputRef = useRef<HTMLInputElement>(null)
-    const videoInputRef = useRef<HTMLInputElement>(null)
+    const imageWidgetRef = useRef<any>(null)
+    const videoWidgetRef = useRef<any>(null)
+
+    useEffect(() => {
+        fetchProjects()
+        initializeCloudinaryWidgets()
+    }, [])
+
+    function initializeCloudinaryWidgets() {
+        if (typeof window !== 'undefined' && (window as any).cloudinary) {
+            // Initialize image widget
+            imageWidgetRef.current = (window as any).cloudinary.createUploadWidget(
+                {
+                    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+                    uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'unsigned_upload',
+                    resourceType: 'image',
+                    clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+                    maxFileSize: 52428800, // 50MB
+                },
+                (error: any, result: any) => {
+                    if (error) {
+                        setUploadError(`Image upload failed: ${error.message}`)
+                        return
+                    }
+                    if (result?.event === 'success') {
+                        if (editingProject) {
+                            setEditingProject({ ...editingProject, image: result.info.secure_url })
+                            setSuccessMessage('Image uploaded successfully!')
+                            setTimeout(() => setSuccessMessage(null), 3000)
+                            setUploadingField(null)
+                        }
+                    }
+                }
+            )
+
+            // Initialize video widget
+            videoWidgetRef.current = (window as any).cloudinary.createUploadWidget(
+                {
+                    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+                    uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'unsigned_upload',
+                    resourceType: 'video',
+                    clientAllowedFormats: ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv'],
+                    maxFileSize: 1073741824, // 1GB for videos
+                },
+                (error: any, result: any) => {
+                    if (error) {
+                        setUploadError(`Video upload failed: ${error.message}`)
+                        return
+                    }
+                    if (result?.event === 'success') {
+                        if (editingProject) {
+                            setEditingProject({ ...editingProject, video: result.info.secure_url })
+                            setSuccessMessage('Video uploaded successfully!')
+                            setTimeout(() => setSuccessMessage(null), 3000)
+                            setUploadingField(null)
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    function openImageUpload() {
+        setUploadingField('image')
+        setUploadError(null)
+        imageWidgetRef.current?.open()
+    }
+
+    function openVideoUpload() {
+        setUploadingField('video')
+        setUploadError(null)
+        videoWidgetRef.current?.open()
+    }
 
     useEffect(() => {
         fetchProjects()
@@ -145,78 +214,6 @@ function ProjectEditor() {
         setTimeout(() => setShowSaveNotif(false), 3000)
         setEditingProject(null)
         fetchProjects()
-    }
-
-    async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'video') {
-        const file = e.target.files?.[0]
-        if (!file) return
-        
-        // Validate file size
-        const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
-        const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
-        const maxSize = field === 'image' ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE
-        
-        if (file.size > maxSize) {
-            const sizeMB = (maxSize / (1024 * 1024)).toFixed(0)
-            setUploadError(`File too large! Maximum size is ${sizeMB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`)
-            return
-        }
-        
-        if (field === 'image') {
-            setSelectedImageFile(file)
-        } else {
-            setSelectedVideoFile(file)
-        }
-        setUploadError(null)
-    }
-
-    async function handleUploadFile(field: 'image' | 'video') {
-        const file = field === 'image' ? selectedImageFile : selectedVideoFile
-        if (!file || !editingProject) return
-
-        setUploadingField(field)
-        setUploadError(null)
-        setSuccessMessage(null)
-
-        const formData = new FormData()
-        formData.append('file', file)
-
-        try {
-            console.log(`Uploading ${field}:`, file.name)
-            const res = await fetch('/api/upload', { method: 'POST', body: formData })
-            
-            if (!res.ok) {
-                throw new Error(`Upload failed with status ${res.status}`)
-            }
-            
-            const data = await res.json()
-            console.log('Upload response:', data)
-            
-            if (data.success && data.url) {
-                // Add cache-busting query parameter to force fresh load
-                const urlWithTimestamp = `${data.url}?t=${Date.now()}`
-                setEditingProject({ ...editingProject, [field]: urlWithTimestamp })
-                setSuccessMessage(`${field.charAt(0).toUpperCase() + field.slice(1)} uploaded successfully!`)
-                setTimeout(() => setSuccessMessage(null), 3000)
-                
-                // Clear file selection and input
-                if (field === 'image') {
-                    setSelectedImageFile(null)
-                    if (imageInputRef.current) imageInputRef.current.value = ''
-                } else {
-                    setSelectedVideoFile(null)
-                    if (videoInputRef.current) videoInputRef.current.value = ''
-                }
-            } else {
-                throw new Error(data.message || `Upload failed for ${field}`)
-            }
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error)
-            console.error(`${field} upload error:`, errorMsg)
-            setUploadError(`Failed to upload ${field}: ${errorMsg}`)
-        } finally {
-            setUploadingField(null)
-        }
     }
 
     if (loading) return <div>Loading Projects...</div>
@@ -288,30 +285,16 @@ function ProjectEditor() {
                                 <div className="text-[9px] text-accent mt-2">✓ Image uploaded</div>
                             </div>
                         )}
-                        <div className="flex gap-2 items-end">
-                            <div className="flex-1">
-                                <input
-                                    ref={imageInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => handleFileSelect(e, 'image')}
-                                    className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
-                                    disabled={uploadingField === 'image'}
-                                />
-                            </div>
+                        <div className="flex gap-2">
                             <button
                                 type="button"
-                                onClick={() => handleUploadFile('image')}
-                                disabled={!selectedImageFile || uploadingField === 'image'}
-                                className="text-xs px-3 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
+                                onClick={openImageUpload}
+                                disabled={uploadingField === 'image'}
+                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
                             >
                                 {uploadingField === 'image' ? 'UPLOADING...' : 'UPLOAD IMAGE'}
                             </button>
                         </div>
-                        {selectedImageFile && !uploadingField && (
-                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedImageFile.name} ({(selectedImageFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
-                        )}
-                        <div className="text-[9px] text-muted-foreground/60 mt-1">Max image size: 10MB</div>
                         {uploadingField === 'image' && (
                             <div className="text-xs text-accent animate-pulse mt-2">► UPLOADING IMAGE...</div>
                         )}
@@ -321,6 +304,7 @@ function ProjectEditor() {
                         {successMessage && uploadingField !== 'image' && (
                             <div className="text-xs text-green-500 p-2 bg-green-500/10 border border-green-500/30 font-mono mt-2">{successMessage}</div>
                         )}
+                        <div className="text-[9px] text-muted-foreground/60 mt-2">Direct upload to cloud • No size limit</div>
                     </div>
 
                     <div className="flex flex-col gap-1 border border-border p-4 bg-background/20">
@@ -333,36 +317,22 @@ function ProjectEditor() {
                                 onChange={e => setEditingProject({ ...editingProject, video: e.target.value })}
                             />
                         </div>
-                        {editingProject.video && !selectedVideoFile && (
+                        {editingProject.video && (
                             <div className="mb-3">
                                 <video key={editingProject.video} src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video failed to load:', editingProject.video)} />
                                 <div className="text-[9px] text-accent mt-2">✓ Video ready</div>
                             </div>
                         )}
-                        <div className="flex gap-2 items-end">
-                            <div className="flex-1">
-                                <input
-                                    ref={videoInputRef}
-                                    type="file"
-                                    accept="video/*"
-                                    onChange={(e) => handleFileSelect(e, 'video')}
-                                    className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
-                                    disabled={uploadingField === 'video'}
-                                />
-                            </div>
+                        <div className="flex gap-2">
                             <button
                                 type="button"
-                                onClick={() => handleUploadFile('video')}
-                                disabled={!selectedVideoFile || uploadingField === 'video'}
-                                className="text-xs px-3 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
+                                onClick={openVideoUpload}
+                                disabled={uploadingField === 'video'}
+                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
                             >
                                 {uploadingField === 'video' ? 'UPLOADING...' : 'UPLOAD VIDEO'}
                             </button>
                         </div>
-                        {selectedVideoFile && !uploadingField && (
-                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedVideoFile.name} ({(selectedVideoFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
-                        )}
-                        <div className="text-[9px] text-muted-foreground/60 mt-1">Max video size: 100MB</div>
                         {uploadingField === 'video' && (
                             <div className="text-xs text-accent animate-pulse mt-2">► UPLOADING VIDEO...</div>
                         )}
@@ -372,6 +342,7 @@ function ProjectEditor() {
                         {successMessage && uploadingField !== 'video' && (
                             <div className="text-xs text-green-500 p-2 bg-green-500/10 border border-green-500/30 font-mono mt-2">{successMessage}</div>
                         )}
+                        <div className="text-[9px] text-muted-foreground/60 mt-2">Direct upload to cloud • Supports up to 1GB videos</div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -578,10 +549,73 @@ function GalleryEditor() {
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
-    const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null)
-    const mediaInputRef = useRef<HTMLInputElement>(null)
+    const galleryImageWidgetRef = useRef<any>(null)
+    const galleryVideoWidgetRef = useRef<any>(null)
 
-    useEffect(() => { fetchGallery() }, [])
+    useEffect(() => { fetchGallery(); initializeGalleryCloudinaryWidgets() }, [])
+
+    function initializeGalleryCloudinaryWidgets() {
+        const win = window as any
+        if (!win.cloudinary) return
+
+        galleryImageWidgetRef.current = win.cloudinary.createUploadWidget({
+            cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+            uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+            resourceType: 'image',
+            maxFileSize: 52428800, // 50MB
+            sources: ['local', 'url', 'camera'],
+            multiple: false,
+            maxFiles: 1,
+            formats: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+        }, (error: any, result: any) => {
+            if (error) {
+                console.error('Cloudinary image upload error:', error)
+                setUploadError(`Upload failed: ${error.message}`)
+                setUploading(false)
+            }
+            if (result?.event === 'success') {
+                setEditingItem(prev => prev ? { ...prev, mediaUrl: result.info.secure_url, mediaType: 'image' } : null)
+                setSuccessMessage('Image uploaded successfully!')
+                setUploading(false)
+                setTimeout(() => setSuccessMessage(null), 3000)
+            }
+        })
+
+        galleryVideoWidgetRef.current = win.cloudinary.createUploadWidget({
+            cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+            uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+            resourceType: 'video',
+            maxFileSize: 1073741824, // 1GB
+            sources: ['local', 'url'],
+            multiple: false,
+            maxFiles: 1,
+            formats: ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv']
+        }, (error: any, result: any) => {
+            if (error) {
+                console.error('Cloudinary video upload error:', error)
+                setUploadError(`Upload failed: ${error.message}`)
+                setUploading(false)
+            }
+            if (result?.event === 'success') {
+                setEditingItem(prev => prev ? { ...prev, mediaUrl: result.info.secure_url, mediaType: 'video' } : null)
+                setSuccessMessage('Video uploaded successfully!')
+                setUploading(false)
+                setTimeout(() => setSuccessMessage(null), 3000)
+            }
+        })
+    }
+
+    function openGalleryImageUpload() {
+        setUploading(true)
+        setUploadError(null)
+        galleryImageWidgetRef.current?.open()
+    }
+
+    function openGalleryVideoUpload() {
+        setUploading(true)
+        setUploadError(null)
+        galleryVideoWidgetRef.current?.open()
+    }
 
     async function fetchGallery() {
         try {
@@ -611,118 +645,6 @@ function GalleryEditor() {
         if (!confirm("Delete this artifact?")) return
         await fetch('/api/gallery', { method: 'DELETE', body: JSON.stringify({ id }) })
         fetchGallery()
-    }
-
-    async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file) return
-        
-        // Validate file size
-        const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
-        const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
-        const isVideo = file.type.startsWith('video')
-        const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
-        
-        if (file.size > maxSize) {
-            const sizeMB = (maxSize / (1024 * 1024)).toFixed(0)
-            setUploadError(`File too large! Maximum size is ${sizeMB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`)
-            return
-        }
-        
-        setSelectedMediaFile(file)
-        setUploadError(null)
-    }
-
-    async function handleUploadFile() {
-        const file = selectedMediaFile
-        if (!file || !editingItem) return
-        
-        setUploading(true)
-        setUploadError(null)
-        setSuccessMessage(null)
-        
-        const formData = new FormData()
-        formData.append('file', file)
-        
-        try {
-            console.log('Uploading media:', file.name)
-            const res = await fetch('/api/upload', { method: 'POST', body: formData })
-            
-            if (!res.ok) {
-                throw new Error(`Upload failed with status ${res.status}`)
-            }
-            
-            const data = await res.json()
-            console.log('Upload response:', data)
-            
-            if (data.success && data.url) {
-                // Add cache-busting query parameter to force fresh load
-                const urlWithTimestamp = `${data.url}?t=${Date.now()}`
-                const type = file.type.startsWith('video') ? 'video' : 'image'
-                setEditingItem({ ...editingItem, mediaUrl: urlWithTimestamp, mediaType: type })
-                setSuccessMessage('Media uploaded successfully!')
-                setTimeout(() => setSuccessMessage(null), 3000)
-                
-                // Clear file selection and input
-                setSelectedMediaFile(null)
-                if (mediaInputRef.current) {
-                    mediaInputRef.current.value = ''
-                }
-            } else {
-                throw new Error(data.message || 'Upload failed')
-            }
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error)
-            console.error('Media upload error:', errorMsg)
-            setUploadError(`Failed to upload: ${errorMsg}`)
-        } finally {
-            setUploading(false)
-        }
-    }
-
-    async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file || !editingItem) return
-        
-        setUploading(true)
-        setUploadError(null)
-        
-        const formData = new FormData()
-        formData.append('file', file)
-        
-        try {
-            console.log('Uploading media:', file.name)
-            const res = await fetch('/api/upload', { method: 'POST', body: formData })
-            
-            if (!res.ok) {
-                throw new Error(`Upload failed with status ${res.status}`)
-            }
-            
-            const data = await res.json()
-            console.log('Upload response:', data)
-            
-            if (data.success && data.url) {
-                // Add cache-busting query parameter to force fresh load
-                const urlWithTimestamp = `${data.url}?t=${Date.now()}`
-                const type = file.type.startsWith('video') ? 'video' : 'image'
-                setEditingItem({ ...editingItem, mediaUrl: urlWithTimestamp, mediaType: type })
-                setUploadError(null)
-                console.log('Media uploaded successfully:', urlWithTimestamp)
-                
-                // Clear file input
-                if (mediaInputRef.current) {
-                    mediaInputRef.current.value = ''
-                }
-            } else {
-                throw new Error(data.message || 'Upload failed')
-            }
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error)
-            console.error('Media upload error:', errorMsg)
-            setUploadError(`Failed to upload: ${errorMsg}`)
-        } finally {
-            setUploading(false)
-        }
     }
 
     if (loading) return <div>Loading Gallery...</div>
@@ -775,7 +697,7 @@ function GalleryEditor() {
                                 <option value="video">VIDEO</option>
                             </select>
                         </div>
-                        {editingItem.mediaUrl && !selectedMediaFile && (
+                        {editingItem.mediaUrl && (
                             <div className="mb-3">
                                 {editingItem.mediaType === 'video' ?
                                     <video key={editingItem.mediaUrl} src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video preview failed:', editingItem.mediaUrl)} /> :
@@ -784,23 +706,25 @@ function GalleryEditor() {
                                 <div className="text-[9px] text-accent mt-2">✓ Media ready</div>
                             </div>
                         )}
-                        <div className="flex gap-2 items-end">
-                            <div className="flex-1">
-                                <input ref={mediaInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20" disabled={uploading} />
-                            </div>
+                        <div className="flex gap-2">
                             <button
                                 type="button"
-                                onClick={handleUploadFile}
-                                disabled={!selectedMediaFile || uploading}
-                                className="text-xs px-3 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
+                                onClick={openGalleryImageUpload}
+                                disabled={uploading}
+                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
                             >
-                                {uploading ? 'UPLOADING...' : 'UPLOAD MEDIA'}
+                                {uploading ? 'UPLOADING...' : 'UPLOAD IMAGE'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={openGalleryVideoUpload}
+                                disabled={uploading}
+                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
+                            >
+                                {uploading ? 'UPLOADING...' : 'UPLOAD VIDEO'}
                             </button>
                         </div>
-                        {selectedMediaFile && !uploading && (
-                            <div className="text-[9px] text-muted-foreground mt-1">Selected: {selectedMediaFile.name} ({(selectedMediaFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
-                        )}
-                        <div className="text-[9px] text-muted-foreground/60 mt-1">Max image: 10MB | Max video: 100MB</div>
+                        <div className="text-[9px] text-muted-foreground/60 mt-2">Direct upload to cloud • Images: 50MB | Videos: 1GB</div>
                         {uploading && (
                             <div className="text-xs text-accent animate-pulse mt-2">► UPLOADING MEDIA...</div>
                         )}
