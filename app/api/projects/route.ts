@@ -8,8 +8,11 @@ export async function GET() {
         const projects = await db.collection('projects').find({}).toArray()
         return NextResponse.json(projects)
     } catch (error) {
-        console.error('Database error:', error)
-        return NextResponse.json({ error: 'Failed to read data' }, { status: 500 })
+        console.error('Projects GET error:', error)
+        return NextResponse.json(
+            { error: 'Failed to fetch projects', details: String(error) },
+            { status: 500 }
+        )
     }
 }
 
@@ -27,8 +30,11 @@ export async function POST(request: Request) {
         const result = await db.collection('projects').insertOne(projectToInsert)
         return NextResponse.json({ message: 'Project added', project: projectToInsert })
     } catch (error) {
-        console.error('Database error:', error)
-        return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
+        console.error('Projects POST error:', error)
+        return NextResponse.json(
+            { error: 'Failed to save project', details: String(error) },
+            { status: 500 }
+        )
     }
 }
 
@@ -44,8 +50,11 @@ export async function PUT(request: Request) {
 
         return NextResponse.json({ message: 'Project updated', project: updatedProject })
     } catch (error) {
-        console.error('Database error:', error)
-        return NextResponse.json({ error: 'Failed to update data' }, { status: 500 })
+        console.error('Projects PUT error:', error)
+        return NextResponse.json(
+            { error: 'Failed to update project', details: String(error) },
+            { status: 500 }
+        )
     }
 }
 
@@ -58,7 +67,10 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ message: 'Project deleted' })
     } catch (error) {
-        console.error('Database error:', error)
-        return NextResponse.json({ error: 'Failed to delete data' }, { status: 500 })
+        console.error('Projects DELETE error:', error)
+        return NextResponse.json(
+            { error: 'Failed to delete project', details: String(error) },
+            { status: 500 }
+        )
     }
 }

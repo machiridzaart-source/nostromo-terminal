@@ -7,8 +7,11 @@ export async function GET() {
         const content = await db.collection('content').findOne({ _id: 'main' })
         return NextResponse.json(content || {})
     } catch (error) {
-        console.error('Database error:', error)
-        return NextResponse.json({ error: 'Failed to read content data' }, { status: 500 })
+        console.error('Content GET error:', error)
+        return NextResponse.json(
+            { error: 'Failed to fetch content', details: String(error) },
+            { status: 500 }
+        )
     }
 }
 
@@ -45,7 +48,10 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: 'Content updated', content })
     } catch (error) {
-        console.error('Database error:', error)
-        return NextResponse.json({ error: 'Failed to save content' }, { status: 500 })
+        console.error('Content POST error:', error)
+        return NextResponse.json(
+            { error: 'Failed to save content', details: String(error) },
+            { status: 500 }
+        )
     }
 }
