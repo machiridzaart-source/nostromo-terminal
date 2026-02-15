@@ -1,0 +1,206 @@
+[
+  {
+    "id": "ST",
+    "title": "Sushi-Time ",
+    "desc": "Last year me and a couple of friends did an 48Hr animation challenge for CTIF '25, I was in charge of doings to the early Animatic, as well as animate some shots.",
+    "tags": [
+      "Animation",
+      "Storyboards"
+    ],
+    "featured": true,
+    "video": "/uploads/Speedswoosh-1771095471492-346977080.mp4",
+    "sections": [
+      {
+        "id": "1771095474387",
+        "text": "In the early phase of the project i did the rough animatic ",
+        "media": [
+          {
+            "url": "/uploads/Sushui chef finals back-1771095510587-943816511.mp4",
+            "type": "video"
+          }
+        ]
+      },
+      {
+        "id": "1771095577056",
+        "text": "Full Short",
+        "media": [
+          {
+            "url": "/uploads/SCRIBBLESYNC_SUSHI_TIME-1771095587848-69481340.mp4",
+            "type": "video"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rel",
+    "title": "2025 Reel",
+    "desc": "a compilation of from of my recent work ",
+    "tags": [
+      "Animation",
+      "Storyboards"
+    ],
+    "featured": false,
+    "video": "/uploads/neu reel-1771091573733-209033432.mp4",
+    "sections": []
+  },
+  {
+    "id": "ply",
+    "title": "The Play",
+    "desc": "Some shots I worked on for The Gobelins 3rd year short film The Play. I volunteered for cleanup work.",
+    "tags": [
+      "Gobelis",
+      "Animation"
+    ],
+    "featured": true,
+    "video": "/uploads/Comp -1771091288050-432898661.mp4",
+    "sections": [
+      {
+        "id": "1771091372755",
+        "text": "",
+        "media": [
+          {
+            "url": "/uploads/Comp 1_2-1771091394847-755174205.avi",
+            "type": "video"
+          },
+          {
+            "url": "/uploads/SH040_newsize-1771091399688-818000259.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/SQ03_SH041_FORCLEAN2_Clip_009-1771091404709-93119541.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/SQ04_SH083_FORCLEAN-1771091408888-591276922.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/SQ08_SH194_FORCLEAN-1771091414071-143568711.png",
+            "type": "image"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PYER",
+    "title": "PYERLORDS",
+    "desc": "a knight travels a shattered world in search for his God",
+    "tags": [
+      "Animation",
+      "Storyboards"
+    ],
+    "featured": false,
+    "video": "/uploads/final 2-1771084690196-437669502.mp4",
+    "sections": [
+      {
+        "id": "1771084693400",
+        "text": "initial idea\n\nthe initial idea what to just animate a small quirky character whos part of a massive world",
+        "media": [
+          {
+            "url": "/uploads/02-1771084740497-234298968.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/0012-1771084746155-276978380.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/009-1771084750382-796806659.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/pyerlords1-1771084766594-730529927.png",
+            "type": "image"
+          }
+        ]
+      },
+      {
+        "id": "1771084781360",
+        "text": "The world\n\nThis is a shattered world that has just Gone though a massive war, and now crystals have began emerging everywwere",
+        "media": [
+          {
+            "url": "/uploads/bridge-1771084907879-126859648.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/crystal dome-1771084916753-149338810.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/dashslide-1771084934443-51433330.png",
+            "type": "image"
+          },
+          {
+            "url": "/uploads/dome-1771084955562-85882574.png",
+            "type": "image"
+          }
+        ]
+      },
+      {
+        "id": "1771084957140",
+        "text": "The crystals seem to be an alien form corruptig this world",
+        "media": [
+          {
+            "url": "/uploads/crystal-1771084969299-421038920.mp4",
+            "type": "video"
+          },
+          {
+            "url": "/uploads/temple statue-1771084993528-707059001.mp4",
+            "type": "video"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HUNT",
+    "title": "The Hunt",
+    "desc": "We follow a squad of SPACEMARINES hunting a Demonlord",
+    "tags": [
+      "animation",
+      "stoyboards"
+    ],
+    "featured": true,
+    "video": "/uploads/the hunt-1771084560988-471006796.mp4",
+    "sections": [
+      {
+        "id": "1771084035377",
+        "text": "I dad various tests and to try and figure of, movement of the Marines ",
+        "media": [
+          {
+            "url": "/uploads/The Hunt-1771084053380-230181860.mp4",
+            "type": "video"
+          },
+          {
+            "url": "/uploads/Untitled-1771084074277-461740221.mov",
+            "type": "video"
+          }
+        ]
+      },
+      {
+        "id": "1771084120112",
+        "text": "Here are some of the Storyboard stots ",
+        "media": [
+          {
+            "url": "/uploads/grab-1771084134982-827942922.mp4",
+            "type": "video"
+          },
+          {
+            "url": "/uploads/back-1771084152873-236438107.mp4",
+            "type": "video"
+          },
+          {
+            "url": "/uploads/turn-1771084158361-522013237.mp4",
+            "type": "video"
+          },
+          {
+            "url": "/uploads/walk-1771084163287-393819316.mp4",
+            "type": "video"
+          }
+        ]
+      }
+    ]
+  }
+]

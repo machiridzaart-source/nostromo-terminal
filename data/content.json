@@ -1,0 +1,193 @@
+{
+  "home": {
+    "title": "Jack Machiridza",
+    "subtitle": "GROUP: ANIMATION // MODULE: PORTFOLIO",
+    "description": "2D Animator and Storyboard Artist with 4 years of experience in character animation and visual storytelling. Passionate about crafting emotionally resonant stories through expressive animation and thoughtful composition. Experienced in developing storyboards that capture dramatic beats, establish mood, and guide the visual language of film projects.",
+    "modules": [
+      {
+        "id": "gallery",
+        "label": "ART GALLERY",
+        "status": "ONLINE",
+        "desc": "My Various works"
+      },
+      {
+        "id": "projects",
+        "label": "PROJECTS",
+        "status": "ONLINE",
+        "desc": "My Projects and Previous work"
+      },
+      {
+        "id": "about",
+        "label": "ABOUT UNIT",
+        "status": "ONLINE",
+        "desc": "OPERATOR INFORMATION"
+      },
+      {
+        "id": "skills",
+        "label": "SKILL MATRIX",
+        "status": "ACTIVE",
+        "desc": "TECHNICAL CAPABILITIES"
+      },
+      {
+        "id": "contact",
+        "label": "TRANSMIT MSG",
+        "status": "STANDBY",
+        "desc": "COMMUNICATION CHANNEL"
+      }
+    ],
+    "tags": [
+      "2D ANIMATION",
+      "STORYBOARDS"
+    ],
+    "stats": [
+      {
+        "label": "MEM",
+        "value": "64K/128K"
+      },
+      {
+        "label": "CPU",
+        "value": "98.7%"
+      },
+      {
+        "label": "UPTIME",
+        "value": "847:23:41"
+      },
+      {
+        "label": "TEMP",
+        "value": "42C"
+      },
+      {
+        "label": "STATUS",
+        "value": "ALL SYSTEMS NOMINAL"
+      }
+    ]
+  },
+  "about": {
+    "title": "ABOUT UNIT",
+    "subtitle": "// OPERATOR PROFILE",
+    "designation": "2D Animator and Storyboard Artist",
+    "stats": {
+      "status": "ACTIVE",
+      "location": "GLOBAL // REMOTE",
+      "clearance": "LEVEL 5",
+      "specialty": "Animation"
+    },
+    "bio": "2D Animator and Storyboard Artist with 4 years of experience in character animation and visual storytelling. Passionate about crafting emotionally resonant stories through expressive animation and thoughtful composition. Experienced in developing storyboards that capture dramatic beats, establish mood, and guide the visual language of film projects.",
+    "bioSecond": "Proficient in industry-standard tools including Toon Boom Harmony, Adobe Animate, Storyboard Pro, Photoshop, After Effects, and [other relevant software].",
+    "timeline": [
+      {
+        "year": "2025",
+        "event": "FREELANCE ",
+        "desc": "Working with various clients on a freelance basis."
+      },
+      {
+        "year": "2025",
+        "event": "2d animator @ THE HIDDEN HAND STUDIOS",
+        "desc": "worked in varous roles sucj as claan-up, color, inbetweening as well as storyboards."
+      },
+      {
+        "year": "2022",
+        "event": "GLOBAL TRAVEL ALLIANCE",
+        "desc": "Designned campaign assets, as well as social media posts"
+      },
+      {
+        "year": "2020",
+        "event": "JUNIOR DESIGNER @ KILOTANGO STUDIOS",
+        "desc": "Designed posters for various events and parties"
+      },
+      {
+        "year": "2019",
+        "event": "BFA DIGITAL ARTS - GRADUATED",
+        "desc": "Thesis: Generative Art Systems and Human Perception"
+      }
+    ],
+    "operatorName": "Jack MAchiridza"
+  },
+  "skills": {
+    "title": "SKILL MATRIX",
+    "subtitle": "// CAPABILITY ASSESSMENT",
+    "list": [
+      {
+        "name": "TV-PAINT",
+        "level": 95,
+        "category": "ANIMATION"
+      },
+      {
+        "name": "CLIP STUDIO",
+        "level": 90,
+        "category": "ANIMATION"
+      },
+      {
+        "name": "FIGMA",
+        "level": 88,
+        "category": "DESIGN"
+      },
+      {
+        "name": "BLENDER",
+        "level": 50,
+        "category": "3D"
+      },
+      {
+        "name": "STORYBOARD PRO",
+        "level": 75,
+        "category": "ANIMATION"
+      },
+      {
+        "name": "AFTER EFFECTS",
+        "level": 92,
+        "category": "MOTION"
+      },
+      {
+        "name": "PREMIERE PRO",
+        "level": 78,
+        "category": "MOTION"
+      },
+      {
+        "name": "PROCESSING",
+        "level": 85,
+        "category": "CODE"
+      },
+      {
+        "name": "JAVASCRIPT",
+        "level": 72,
+        "category": "CODE"
+      },
+      {
+        "name": "GLSL/SHADERS",
+        "level": 68,
+        "category": "CODE"
+      },
+      {
+        "name": "DaVinci Resolve",
+        "level": 70,
+        "category": "MOTION"
+      },
+      {
+        "name": "PROCREATE",
+        "level": 88,
+        "category": "DESIGN"
+      }
+    ],
+    "categories": [
+      "ALL",
+      "ANIMATION",
+      "3D",
+      "MOTION",
+      "CODE"
+    ]
+  },
+  "contact": {
+    "title": "TRANSMIT MESSAGE",
+    "subtitle": "// COMMUNICATION CHANNEL",
+    "email": "hello@artoperator.dev",
+    "social": "@artoperator",
+    "location": "GLOBAL // REMOTE",
+    "availability": "ACCEPTING COMMISSIONS",
+    "availabilityDesc": "Currently open for freelance work, collaborations, and creative projects. Response time: within 48 hours.",
+    "encryption": [
+      "AES-256 ENABLED",
+      "TLS 1.3 ACTIVE"
+    ]
+  },
+  "customPages": []
+}
