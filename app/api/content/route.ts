@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-
-const dataFilePath = path.join(process.cwd(), 'data/content.json')
+import { getDatabase } from '@/lib/mongodb'
 
 export async function GET() {
     try {
-        const fileContents = await fs.readFile(dataFilePath, 'utf8')
-        const data = JSON.parse(fileContents)
-        return NextResponse.json(data)
+        const db = await getDatabase()
+        const content = await db.collection('content').findOne({ _id: 'main' })
+        return NextResponse.json(content || {})
     } catch (error) {
+        console.error('Database error:', error)
         return NextResponse.json({ error: 'Failed to read content data' }, { status: 500 })
     }
 }
@@ -17,14 +15,17 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const fileContents = await fs.readFile(dataFilePath, 'utf8')
-        let content = JSON.parse(fileContents)
+        const db = await getDatabase()
+
+        // Get existing content
+        let content = await db.collection('content').findOne({ _id: 'main' }) || {}
 
         // Update specific section or add custom page
         if (body.section) {
             content[body.section] = body.data
         } else if (body.type === "customPage") {
             // Handle adding/updating custom pages
+            if (!content.customPages) content.customPages = []
             const existingIndex = content.customPages.findIndex((p: any) => p.id === body.data.id)
             if (existingIndex >= 0) {
                 content.customPages[existingIndex] = body.data
@@ -35,9 +36,16 @@ export async function POST(request: Request) {
             content = body.data
         }
 
-        await fs.writeFile(dataFilePath, JSON.stringify(content, null, 2))
+        // Update in database
+        await db.collection('content').updateOne(
+            { _id: 'main' },
+            { $set: content },
+            { upsert: true }
+        )
+
         return NextResponse.json({ message: 'Content updated', content })
     } catch (error) {
+        console.error('Database error:', error)
         return NextResponse.json({ error: 'Failed to save content' }, { status: 500 })
     }
 }
