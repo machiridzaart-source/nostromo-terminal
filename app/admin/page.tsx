@@ -784,7 +784,11 @@ function GalleryEditor() {
                         <div key={p.id} className="flex items-center justify-between p-3 bg-background/20 border border-border hover:border-accent/30 transition-colors group">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-foreground/5 border border-border overflow-hidden">
-                                    {p.mediaType === 'video' ? <video src={p.mediaUrl} className="w-full h-full object-cover" /> : <img src={p.mediaUrl} className="w-full h-full object-cover" />}
+                                    {p.mediaUrl ? (
+                                        p.mediaType === 'video' ? 
+                                            <video src={p.mediaUrl} className="w-full h-full object-cover" muted /> : 
+                                            <img src={p.mediaUrl} className="w-full h-full object-cover" alt={p.title} />
+                                    ) : null}
                                 </div>
                                 <div>
                                     <div className="text-sm font-bold">{p.title}</div>
