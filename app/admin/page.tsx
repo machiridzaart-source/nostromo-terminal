@@ -101,6 +101,11 @@ function ProjectEditor() {
     const [uploadingField, setUploadingField] = useState<'image' | 'video' | null>(null)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+    const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null)
+    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
+    const imageInputRef = useRef<HTMLInputElement>(null)
+    const videoInputRef = useRef<HTMLInputElement>(null)
     const imageWidgetRef = useRef<any>(null)
     const videoWidgetRef = useRef<any>(null)
 
@@ -123,14 +128,18 @@ function ProjectEditor() {
                 (error: any, result: any) => {
                     if (error) {
                         setUploadError(`Image upload failed: ${error.message}`)
+                        setUploadingField(null)
                         return
                     }
                     if (result?.event === 'success') {
                         if (editingProject) {
                             setEditingProject({ ...editingProject, image: result.info.secure_url })
-                            setSuccessMessage('Image uploaded successfully!')
-                            setTimeout(() => setSuccessMessage(null), 3000)
+                            setUploadSuccess('IMAGE')
+                            setSelectedImageFile(null)
+                            if (imageInputRef.current) imageInputRef.current.value = ''
+                            setUploadError(null)
                             setUploadingField(null)
+                            setTimeout(() => setUploadSuccess(null), 3000)
                         }
                     }
                 }
@@ -148,14 +157,18 @@ function ProjectEditor() {
                 (error: any, result: any) => {
                     if (error) {
                         setUploadError(`Video upload failed: ${error.message}`)
+                        setUploadingField(null)
                         return
                     }
                     if (result?.event === 'success') {
                         if (editingProject) {
                             setEditingProject({ ...editingProject, video: result.info.secure_url })
-                            setSuccessMessage('Video uploaded successfully!')
-                            setTimeout(() => setSuccessMessage(null), 3000)
+                            setUploadSuccess('VIDEO')
+                            setSelectedVideoFile(null)
+                            if (videoInputRef.current) videoInputRef.current.value = ''
+                            setUploadError(null)
                             setUploadingField(null)
+                            setTimeout(() => setUploadSuccess(null), 3000)
                         }
                     }
                 }
@@ -221,6 +234,24 @@ function ProjectEditor() {
     if (editingProject) {
         return (
             <div className="space-y-4">
+                {uploadSuccess && (
+                    <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50 border border-accent/30">
+                        <div className="bg-background border-2 border-accent p-6 max-w-md">
+                            <div className="text-center">
+                                <div className="text-4xl text-accent mb-4">★</div>
+                                <h2 className="text-accent text-lg font-bold tracking-widest mb-2">{uploadSuccess} UPLOADED</h2>
+                                <p className="text-xs text-muted-foreground mb-4">Successfully uploaded to cloud storage</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setUploadSuccess(null)}
+                                    className="text-xs px-6 py-2 bg-accent/20 hover:bg-accent/30 border border-accent/30 text-accent tracking-wider font-bold"
+                                >
+                                    CONTINUE
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <h3 className="text-accent text-lg font-bold">{isNew ? "NEW PROJECT" : "EDIT PROJECT"}</h3>
                     <button onClick={() => setEditingProject(null)} className="text-xs hover:text-accent">[CANCEL]</button>
@@ -285,12 +316,28 @@ function ProjectEditor() {
                                 <div className="text-[9px] text-accent mt-2">✓ Image uploaded</div>
                             </div>
                         )}
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
+                            <div className="border border-border/50 p-2 bg-background/10">
+                                <input 
+                                    ref={imageInputRef}
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        setSelectedImageFile(file || null)
+                                        setUploadError(null)
+                                    }}
+                                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-3 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer w-full"
+                                />
+                                {selectedImageFile && (
+                                    <div className="text-[9px] text-accent mt-1">✓ {selectedImageFile.name} ({(selectedImageFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                                )}
+                            </div>
                             <button
                                 type="button"
                                 onClick={openImageUpload}
-                                disabled={uploadingField === 'image'}
-                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
+                                disabled={!selectedImageFile || uploadingField === 'image'}
+                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed font-bold"
                             >
                                 {uploadingField === 'image' ? 'UPLOADING...' : 'UPLOAD IMAGE'}
                             </button>
@@ -301,10 +348,7 @@ function ProjectEditor() {
                         {uploadError && uploadingField === 'image' && (
                             <div className="text-xs text-red-500 p-2 bg-red-500/10 border border-red-500/30 font-mono mt-2">{uploadError}</div>
                         )}
-                        {successMessage && uploadingField !== 'image' && (
-                            <div className="text-xs text-green-500 p-2 bg-green-500/10 border border-green-500/30 font-mono mt-2">{successMessage}</div>
-                        )}
-                        <div className="text-[9px] text-muted-foreground/60 mt-2">Direct upload to cloud • No size limit</div>
+                        <div className="text-[9px] text-muted-foreground/60 mt-1">Direct upload to cloud • Up to 50MB</div>
                     </div>
 
                     <div className="flex flex-col gap-1 border border-border p-4 bg-background/20">
@@ -317,18 +361,34 @@ function ProjectEditor() {
                                 onChange={e => setEditingProject({ ...editingProject, video: e.target.value })}
                             />
                         </div>
-                        {editingProject.video && (
+                        {editingProject.video && !selectedVideoFile && (
                             <div className="mb-3">
                                 <video key={editingProject.video} src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video failed to load:', editingProject.video)} />
                                 <div className="text-[9px] text-accent mt-2">✓ Video ready</div>
                             </div>
                         )}
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
+                            <div className="border border-border/50 p-2 bg-background/10">
+                                <input 
+                                    ref={videoInputRef}
+                                    type="file" 
+                                    accept="video/*" 
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        setSelectedVideoFile(file || null)
+                                        setUploadError(null)
+                                    }}
+                                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-3 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer w-full"
+                                />
+                                {selectedVideoFile && (
+                                    <div className="text-[9px] text-accent mt-1">✓ {selectedVideoFile.name} ({(selectedVideoFile.size / (1024 * 1024)).toFixed(2)}MB)</div>
+                                )}
+                            </div>
                             <button
                                 type="button"
                                 onClick={openVideoUpload}
-                                disabled={uploadingField === 'video'}
-                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed"
+                                disabled={!selectedVideoFile || uploadingField === 'video'}
+                                className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed font-bold"
                             >
                                 {uploadingField === 'video' ? 'UPLOADING...' : 'UPLOAD VIDEO'}
                             </button>
@@ -339,10 +399,7 @@ function ProjectEditor() {
                         {uploadError && uploadingField === 'video' && (
                             <div className="text-xs text-red-500 p-2 bg-red-500/10 border border-red-500/30 font-mono mt-2">{uploadError}</div>
                         )}
-                        {successMessage && uploadingField !== 'video' && (
-                            <div className="text-xs text-green-500 p-2 bg-green-500/10 border border-green-500/30 font-mono mt-2">{successMessage}</div>
-                        )}
-                        <div className="text-[9px] text-muted-foreground/60 mt-2">Direct upload to cloud • Supports up to 1GB videos</div>
+                        <div className="text-[9px] text-muted-foreground/60 mt-1">Direct upload to cloud • Up to 1GB videos</div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -550,6 +607,7 @@ function GalleryEditor() {
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
     const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null)
+    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
     const galleryImageWidgetRef = useRef<any>(null)
     const galleryVideoWidgetRef = useRef<any>(null)
     const mediaInputRef = useRef<HTMLInputElement>(null)
@@ -577,9 +635,12 @@ function GalleryEditor() {
             }
             if (result?.event === 'success') {
                 setEditingItem(prev => prev ? { ...prev, mediaUrl: result.info.secure_url, mediaType: 'image' } : null)
-                setSuccessMessage('Image uploaded successfully!')
+                setUploadSuccess('IMAGE')
+                setSelectedMediaFile(null)
+                if (mediaInputRef.current) mediaInputRef.current.value = ''
+                setUploadError(null)
                 setUploading(false)
-                setTimeout(() => setSuccessMessage(null), 3000)
+                setTimeout(() => setUploadSuccess(null), 3000)
             }
         })
 
@@ -600,9 +661,12 @@ function GalleryEditor() {
             }
             if (result?.event === 'success') {
                 setEditingItem(prev => prev ? { ...prev, mediaUrl: result.info.secure_url, mediaType: 'video' } : null)
-                setSuccessMessage('Video uploaded successfully!')
+                setUploadSuccess('VIDEO')
+                setSelectedMediaFile(null)
+                if (mediaInputRef.current) mediaInputRef.current.value = ''
+                setUploadError(null)
                 setUploading(false)
-                setTimeout(() => setSuccessMessage(null), 3000)
+                setTimeout(() => setUploadSuccess(null), 3000)
             }
         })
     }
@@ -654,6 +718,24 @@ function GalleryEditor() {
     if (editingItem) {
         return (
             <div className="space-y-4">
+                {uploadSuccess && (
+                    <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50 border border-accent/30">
+                        <div className="bg-background border-2 border-accent p-6 max-w-md">
+                            <div className="text-center">
+                                <div className="text-4xl text-accent mb-4">★</div>
+                                <h2 className="text-accent text-lg font-bold tracking-widest mb-2">{uploadSuccess} UPLOADED</h2>
+                                <p className="text-xs text-muted-foreground mb-4">Successfully uploaded to cloud storage</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setUploadSuccess(null)}
+                                    className="text-xs px-6 py-2 bg-accent/20 hover:bg-accent/30 border border-accent/30 text-accent tracking-wider font-bold"
+                                >
+                                    CONTINUE
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <h3 className="text-accent text-lg font-bold">{isNew ? "NEW ARTIFACT" : "EDIT ARTIFACT"}</h3>
                     <button onClick={() => setEditingItem(null)} className="text-xs hover:text-accent">[CANCEL]</button>
@@ -733,16 +815,16 @@ function GalleryEditor() {
                                 <button
                                     type="button"
                                     onClick={openGalleryImageUpload}
-                                    disabled={uploading}
-                                    className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1"
+                                    disabled={!selectedMediaFile || uploading}
+                                    className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1 font-bold"
                                 >
                                     {uploading ? 'UPLOADING...' : 'UPLOAD IMAGE'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={openGalleryVideoUpload}
-                                    disabled={uploading}
-                                    className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1"
+                                    disabled={!selectedMediaFile || uploading}
+                                    className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1 font-bold"
                                 >
                                     {uploading ? 'UPLOADING...' : 'UPLOAD VIDEO'}
                                 </button>
