@@ -43,9 +43,12 @@ export async function PUT(request: Request) {
         const updatedProject = await request.json()
         const db = await getDatabase()
 
+        // Exclude _id from update to avoid MongoDB immutable field error
+        const { _id, ...updateData } = updatedProject
+
         await db.collection('projects').updateOne(
             { id: updatedProject.id },
-            { $set: updatedProject }
+            { $set: updateData }
         )
 
         return NextResponse.json({ message: 'Project updated', project: updatedProject })

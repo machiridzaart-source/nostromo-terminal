@@ -34,9 +34,13 @@ export async function PUT(request: Request) {
     try {
         const updatedItem = await request.json()
         const db = await getDatabase()
+        
+        // Exclude _id from update to avoid MongoDB immutable field error
+        const { _id, ...updateData } = updatedItem
+        
         await db.collection('gallery').updateOne(
             { id: updatedItem.id },
-            { $set: updatedItem }
+            { $set: updateData }
         )
         return NextResponse.json(updatedItem)
     } catch (error) {
