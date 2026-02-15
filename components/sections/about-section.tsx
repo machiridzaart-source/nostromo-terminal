@@ -51,7 +51,7 @@ export function AboutSection() {
         if (response.ok) {
           const data = await response.json()
           if (data.about) {
-            setContent(data.about)
+            setContent({ ...DEFAULT_CONTENT, ...data.about })
           }
         }
       } catch (error) {
@@ -123,7 +123,7 @@ export function AboutSection() {
           <div className="panel-border p-4 bg-background/30">
             <div className="text-[10px] text-muted-foreground tracking-widest mb-3">SERVICE RECORD // CHRONOLOGICAL</div>
             <div className="space-y-3">
-              {content.timeline.map((entry, index) => (
+              {(content.timeline || []).map((entry, index) => (
                 <div key={index} className="flex gap-3 group">
                   <div className="flex flex-col items-center">
                     <div className="w-2 h-2 bg-accent shrink-0 group-hover:animate-pulse-glow" />

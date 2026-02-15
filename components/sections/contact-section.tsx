@@ -38,7 +38,7 @@ export function ContactSection() {
         if (response.ok) {
           const data = await response.json()
           if (data.contact) {
-            setContent(data.contact)
+            setContent({ ...DEFAULT_CONTENT, ...data.contact })
           }
         }
       } catch (error) {
@@ -203,7 +203,7 @@ export function ContactSection() {
               ENCRYPTION STATUS
             </div>
             <div className="flex flex-col gap-1">
-              {content.encryption.map((enc, i) => (
+                {(content.encryption || []).map((enc, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 bg-accent" />
                   <span className="text-[9px] text-foreground/50 tracking-wider">{enc}</span>

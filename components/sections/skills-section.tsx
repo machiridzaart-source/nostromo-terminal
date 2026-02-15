@@ -76,7 +76,7 @@ export function SkillsSection() {
         if (response.ok) {
           const data = await response.json()
           if (data.skills) {
-            setContent(data.skills)
+            setContent({ ...DEFAULT_CONTENT, ...data.skills })
           }
         }
       } catch (error) {

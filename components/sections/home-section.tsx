@@ -44,7 +44,7 @@ export function HomeSection({ onNavigate }: { onNavigate: (section: string) => v
         if (response.ok) {
           const data = await response.json()
           if (data.home) {
-            setContent(data.home)
+            setContent({ ...DEFAULT_CONTENT, ...data.home })
           }
         }
       } catch (error) {
@@ -72,7 +72,7 @@ export function HomeSection({ onNavigate }: { onNavigate: (section: string) => v
             </p>
             <ScanlineBar className="mt-4" />
             <div className="mt-4 flex flex-wrap gap-3">
-              {content.tags.map(tag => (
+              {(content.tags || []).map(tag => (
                 <span key={tag} className="text-[10px] px-2 py-1 panel-border text-accent tracking-wider">{tag}</span>
               ))}
             </div>
@@ -94,7 +94,7 @@ export function HomeSection({ onNavigate }: { onNavigate: (section: string) => v
           <div className="flex-1 h-px bg-border" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {content.modules.map((mod) => (
+          {(content.modules || []).map((mod) => (
             <button
               key={mod.id}
               onClick={() => onNavigate(mod.id)}
@@ -127,7 +127,7 @@ export function HomeSection({ onNavigate }: { onNavigate: (section: string) => v
 
       {/* System info bar */}
       <div className="panel-border p-3 bg-background/20 flex flex-wrap items-center gap-4 text-[9px] text-muted-foreground tracking-wider">
-        {content.stats.map(stat => (
+        {(content.stats || []).map(stat => (
           <span key={stat.label}>{stat.label}: {stat.label === "STATUS" ? <span className="text-accent">{stat.value}</span> : stat.value}</span>
         ))}
       </div>

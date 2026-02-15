@@ -118,7 +118,7 @@ export function GallerySection() {
         const res = await fetch('/api/gallery')
         if (res.ok) {
           const data = await res.json()
-          setGalleryItems(data)
+          setGalleryItems(Array.isArray(data) ? data : [])
         }
       } catch (e) {
         console.error(e)
