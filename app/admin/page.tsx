@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { ScanlineBar, CornerBrackets, TriangleWarning, HexagonNode } from "@/components/hud-elements"
 
@@ -100,6 +100,8 @@ function ProjectEditor() {
     const [showSaveNotif, setShowSaveNotif] = useState(false)
     const [uploadingField, setUploadingField] = useState<'image' | 'video' | null>(null)
     const [uploadError, setUploadError] = useState<string | null>(null)
+    const imageInputRef = useRef<HTMLInputElement>(null)
+    const videoInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         fetchProjects()
@@ -164,9 +166,18 @@ function ProjectEditor() {
             console.log('Upload response:', data)
             
             if (data.success && data.url) {
-                setEditingProject({ ...editingProject, [field]: data.url })
+                // Add cache-busting query parameter to force fresh load
+                const urlWithTimestamp = `${data.url}?t=${Date.now()}`
+                setEditingProject({ ...editingProject, [field]: urlWithTimestamp })
                 setUploadError(null)
-                console.log(`${field} uploaded successfully:`, data.url)
+                console.log(`${field} uploaded successfully:`, urlWithTimestamp)
+                
+                // Clear file input
+                if (field === 'image' && imageInputRef.current) {
+                    imageInputRef.current.value = ''
+                } else if (field === 'video' && videoInputRef.current) {
+                    videoInputRef.current.value = ''
+                }
             } else {
                 throw new Error(data.message || `Upload failed for ${field}`)
             }
@@ -245,9 +256,10 @@ function ProjectEditor() {
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-4 items-center">
                                 {editingProject.image && (
-                                    <img src={editingProject.image} alt="Preview" className="h-20 w-32 object-cover border border-accent/30" />
+                                    <img key={editingProject.image} src={editingProject.image} alt="Preview" className="h-20 w-32 object-cover border border-accent/30" onError={() => console.error('Image failed to load:', editingProject.image)} />
                                 )}
                                 <input
+                                    ref={imageInputRef}
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => handleFileUpload(e, 'image')}
@@ -277,9 +289,10 @@ function ProjectEditor() {
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-4 items-center">
                                 {editingProject.video && (
-                                    <video src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted />
+                                    <video key={editingProject.video} src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video failed to load:', editingProject.video)} />
                                 )}
                                 <input
+                                    ref={videoInputRef}
                                     type="file"
                                     accept="video/*"
                                     onChange={(e) => handleFileUpload(e, 'video')}
@@ -499,6 +512,7 @@ function GalleryEditor() {
     const [showSaveNotif, setShowSaveNotif] = useState(false)
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
+    const mediaInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => { fetchGallery() }, [])
 
@@ -554,10 +568,17 @@ function GalleryEditor() {
             console.log('Upload response:', data)
             
             if (data.success && data.url) {
+                // Add cache-busting query parameter to force fresh load
+                const urlWithTimestamp = `${data.url}?t=${Date.now()}`
                 const type = file.type.startsWith('video') ? 'video' : 'image'
-                setEditingItem({ ...editingItem, mediaUrl: data.url, mediaType: type })
+                setEditingItem({ ...editingItem, mediaUrl: urlWithTimestamp, mediaType: type })
                 setUploadError(null)
-                console.log('Media uploaded successfully:', data.url)
+                console.log('Media uploaded successfully:', urlWithTimestamp)
+                
+                // Clear file input
+                if (mediaInputRef.current) {
+                    mediaInputRef.current.value = ''
+                }
             } else {
                 throw new Error(data.message || 'Upload failed')
             }
@@ -624,10 +645,10 @@ function GalleryEditor() {
                             <div className="flex gap-4 items-center">
                                 {editingItem.mediaUrl && (
                                     editingItem.mediaType === 'video' ?
-                                        <video src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" muted /> :
-                                        <img src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" />
+                                        <video key={editingItem.mediaUrl} src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" muted onError={() => console.error('Video preview failed:', editingItem.mediaUrl)} /> :
+                                        <img key={editingItem.mediaUrl} src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" onError={() => console.error('Image preview failed:', editingItem.mediaUrl)} />
                                 )}
-                                <input type="file" accept="image/*,video/*" onChange={handleFileUpload} className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20" disabled={uploading} />
+                                <input ref={mediaInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20" disabled={uploading} />
                             </div>
                             {uploading && (
                                 <div className="text-xs text-accent animate-pulse">► UPLOADING MEDIA...</div>
