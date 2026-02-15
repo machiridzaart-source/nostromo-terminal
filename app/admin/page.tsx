@@ -98,6 +98,8 @@ function ProjectEditor() {
     const [editingProject, setEditingProject] = useState<Project | null>(null)
     const [isNew, setIsNew] = useState(false)
     const [showSaveNotif, setShowSaveNotif] = useState(false)
+    const [uploadingField, setUploadingField] = useState<'image' | 'video' | null>(null)
+    const [uploadError, setUploadError] = useState<string | null>(null)
 
     useEffect(() => {
         fetchProjects()
@@ -144,18 +146,36 @@ function ProjectEditor() {
         const file = e.target.files?.[0]
         if (!file || !editingProject) return
 
+        setUploadingField(field)
+        setUploadError(null)
 
         const formData = new FormData()
         formData.append('file', file)
 
         try {
+            console.log(`Uploading ${field}:`, file.name)
             const res = await fetch('/api/upload', { method: 'POST', body: formData })
+            
+            if (!res.ok) {
+                throw new Error(`Upload failed with status ${res.status}`)
+            }
+            
             const data = await res.json()
-            if (data.success) {
+            console.log('Upload response:', data)
+            
+            if (data.success && data.url) {
                 setEditingProject({ ...editingProject, [field]: data.url })
+                setUploadError(null)
+                console.log(`${field} uploaded successfully:`, data.url)
+            } else {
+                throw new Error(data.message || `Upload failed for ${field}`)
             }
         } catch (error) {
-            console.error("Upload failed", error)
+            const errorMsg = error instanceof Error ? error.message : String(error)
+            console.error(`${field} upload error:`, errorMsg)
+            setUploadError(`Failed to upload ${field}: ${errorMsg}`)
+        } finally {
+            setUploadingField(null)
         }
     }
 
@@ -222,16 +242,25 @@ function ProjectEditor() {
 
                     <div className="flex flex-col gap-1 border border-border p-4 bg-background/20">
                         <label className="text-[10px] text-muted-foreground mb-2">PROJECT IMAGE</label>
-                        <div className="flex gap-4 items-center">
-                            {editingProject.image && (
-                                <img src={editingProject.image} alt="Preview" className="h-20 w-32 object-cover border border-accent/30" />
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-4 items-center">
+                                {editingProject.image && (
+                                    <img src={editingProject.image} alt="Preview" className="h-20 w-32 object-cover border border-accent/30" />
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => handleFileUpload(e, 'image')}
+                                    className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
+                                    disabled={uploadingField === 'image'}
+                                />
+                            </div>
+                            {uploadingField === 'image' && (
+                                <div className="text-xs text-accent animate-pulse">► UPLOADING IMAGE...</div>
                             )}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleFileUpload(e, 'image')}
-                                className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
-                            />
+                            {uploadError && uploadingField === 'image' && (
+                                <div className="text-xs text-red-500 p-2 bg-red-500/10 border border-red-500/30 font-mono">{uploadError}</div>
+                            )}
                         </div>
                     </div>
 
@@ -245,16 +274,25 @@ function ProjectEditor() {
                                 onChange={e => setEditingProject({ ...editingProject, video: e.target.value })}
                             />
                         </div>
-                        <div className="flex gap-4 items-center">
-                            {editingProject.video && (
-                                <video src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted />
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-4 items-center">
+                                {editingProject.video && (
+                                    <video src={editingProject.video} className="h-20 w-32 object-cover border border-accent/30" muted />
+                                )}
+                                <input
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(e) => handleFileUpload(e, 'video')}
+                                    className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
+                                    disabled={uploadingField === 'video'}
+                                />
+                            </div>
+                            {uploadingField === 'video' && (
+                                <div className="text-xs text-accent animate-pulse">► UPLOADING VIDEO...</div>
                             )}
-                            <input
-                                type="file"
-                                accept="video/*"
-                                onChange={(e) => handleFileUpload(e, 'video')}
-                                className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
-                            />
+                            {uploadError && uploadingField === 'video' && (
+                                <div className="text-xs text-red-500 p-2 bg-red-500/10 border border-red-500/30 font-mono">{uploadError}</div>
+                            )}
                         </div>
                     </div>
 
@@ -459,6 +497,8 @@ function GalleryEditor() {
     const [editingItem, setEditingItem] = useState<GalleryItem | null>(null)
     const [isNew, setIsNew] = useState(false)
     const [showSaveNotif, setShowSaveNotif] = useState(false)
+    const [uploading, setUploading] = useState(false)
+    const [uploadError, setUploadError] = useState<string | null>(null)
 
     useEffect(() => { fetchGallery() }, [])
 
@@ -495,16 +535,39 @@ function GalleryEditor() {
     async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (!file || !editingItem) return
+        
+        setUploading(true)
+        setUploadError(null)
+        
         const formData = new FormData()
         formData.append('file', file)
+        
         try {
+            console.log('Uploading media:', file.name)
             const res = await fetch('/api/upload', { method: 'POST', body: formData })
+            
+            if (!res.ok) {
+                throw new Error(`Upload failed with status ${res.status}`)
+            }
+            
             const data = await res.json()
-            if (data.success) {
+            console.log('Upload response:', data)
+            
+            if (data.success && data.url) {
                 const type = file.type.startsWith('video') ? 'video' : 'image'
                 setEditingItem({ ...editingItem, mediaUrl: data.url, mediaType: type })
+                setUploadError(null)
+                console.log('Media uploaded successfully:', data.url)
+            } else {
+                throw new Error(data.message || 'Upload failed')
             }
-        } catch (error) { console.error(error) }
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error)
+            console.error('Media upload error:', errorMsg)
+            setUploadError(`Failed to upload: ${errorMsg}`)
+        } finally {
+            setUploading(false)
+        }
     }
 
     if (loading) return <div>Loading Gallery...</div>
@@ -557,13 +620,21 @@ function GalleryEditor() {
                                 <option value="video">VIDEO</option>
                             </select>
                         </div>
-                        <div className="flex gap-4 items-center">
-                            {editingItem.mediaUrl && (
-                                editingItem.mediaType === 'video' ?
-                                    <video src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" muted /> :
-                                    <img src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" />
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-4 items-center">
+                                {editingItem.mediaUrl && (
+                                    editingItem.mediaType === 'video' ?
+                                        <video src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" muted /> :
+                                        <img src={editingItem.mediaUrl} className="h-20 w-32 object-cover border border-accent/30" />
+                                )}
+                                <input type="file" accept="image/*,video/*" onChange={handleFileUpload} className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20" disabled={uploading} />
+                            </div>
+                            {uploading && (
+                                <div className="text-xs text-accent animate-pulse">► UPLOADING MEDIA...</div>
                             )}
-                            <input type="file" accept="image/*,video/*" onChange={handleFileUpload} className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:bg-accent/10 file:text-accent hover:file:bg-accent/20" />
+                            {uploadError && (
+                                <div className="text-xs text-red-500 p-2 bg-red-500/10 border border-red-500/30 font-mono">{uploadError}</div>
+                            )}
                         </div>
                     </div>
 
