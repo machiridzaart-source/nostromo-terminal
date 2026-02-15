@@ -28,7 +28,7 @@ const DEFAULT_CONTENT: HomeContent = {
   stats: [
     { label: "MEM", value: "64K/128K" },
     { label: "CPU", value: "98.7%" },
-    { label: "UPTIME", "value": "847:23:41" },
+    { label: "UPTIME", value: "847:23:41" },
     { label: "TEMP", value: "42C" },
     { label: "STATUS", value: "ALL SYSTEMS NOMINAL" }
   ]
