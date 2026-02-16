@@ -194,6 +194,63 @@ function ProjectEditor() {
         videoWidgetRef.current?.open()
     }
 
+    async function uploadProjectFile(file: File, type: 'image' | 'video') {
+        if (!file) {
+            setUploadError("No file selected")
+            setUploadingField(null)
+            return
+        }
+
+        setUploadingField(type)
+        setUploadError(null)
+
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'unsigned_upload')
+            formData.append('resource_type', type)
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${type}/upload`,
+                {
+                    method: 'POST',
+                    body: formData,
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error?.message || 'Upload failed')
+            }
+
+            const result = await response.json()
+
+            if (result.secure_url) {
+                if (editingProject) {
+                    if (type === 'image') {
+                        setEditingProject({ ...editingProject, image: result.secure_url })
+                        setSelectedImageFile(null)
+                        if (imageInputRef.current) imageInputRef.current.value = ''
+                    } else {
+                        setEditingProject({ ...editingProject, video: result.secure_url })
+                        setSelectedVideoFile(null)
+                        if (videoInputRef.current) videoInputRef.current.value = ''
+                    }
+                    setUploadSuccess(type === 'image' ? 'IMAGE' : 'VIDEO')
+                    setUploadError(null)
+                    setUploadingField(null)
+                    setTimeout(() => setUploadSuccess(null), 3000)
+                }
+            } else {
+                throw new Error('No secure URL in response')
+            }
+        } catch (error) {
+            console.error('Upload error:', error)
+            setUploadError(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            setUploadingField(null)
+        }
+    }
+
     useEffect(() => {
         fetchProjects()
     }, [])
@@ -341,7 +398,7 @@ function ProjectEditor() {
                             </div>
                             <button
                                 type="button"
-                                onClick={openImageUpload}
+                                onClick={() => selectedImageFile && uploadProjectFile(selectedImageFile, 'image')}
                                 disabled={!selectedImageFile || uploadingField === 'image'}
                                 className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed font-bold"
                             >
@@ -392,7 +449,7 @@ function ProjectEditor() {
                             </div>
                             <button
                                 type="button"
-                                onClick={openVideoUpload}
+                                onClick={() => selectedVideoFile && uploadProjectFile(selectedVideoFile, 'video')}
                                 disabled={!selectedVideoFile || uploadingField === 'video'}
                                 className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed font-bold"
                             >
@@ -693,6 +750,59 @@ function GalleryEditor() {
         galleryVideoWidgetRef.current?.open()
     }
 
+    async function uploadFileToCloudinary(file: File, resourceType: 'image' | 'video') {
+        if (!file) {
+            setUploadError("No file selected")
+            setUploading(false)
+            return
+        }
+
+        setUploading(true)
+        setUploadError(null)
+
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'unsigned_upload')
+            formData.append('resource_type', resourceType)
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
+                {
+                    method: 'POST',
+                    body: formData,
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error?.message || 'Upload failed')
+            }
+
+            const result = await response.json()
+
+            if (result.secure_url) {
+                setEditingItem(prev => prev ? {
+                    ...prev,
+                    mediaUrl: result.secure_url,
+                    mediaType: resourceType
+                } : null)
+                setUploadSuccess(resourceType === 'image' ? 'IMAGE' : 'VIDEO')
+                setSelectedMediaFile(null)
+                if (mediaInputRef.current) mediaInputRef.current.value = ''
+                setUploadError(null)
+                setTimeout(() => setUploadSuccess(null), 3000)
+            } else {
+                throw new Error('No secure URL in response')
+            }
+        } catch (error) {
+            console.error('Upload error:', error)
+            setUploadError(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        } finally {
+            setUploading(false)
+        }
+    }
+
     async function fetchGallery() {
         try {
             const res = await fetch('/api/gallery')
@@ -824,7 +934,7 @@ function GalleryEditor() {
                             <div className="flex gap-2">
                                 <button
                                     type="button"
-                                    onClick={openGalleryImageUpload}
+                                    onClick={() => selectedMediaFile && uploadFileToCloudinary(selectedMediaFile, 'image')}
                                     disabled={!selectedMediaFile || uploading}
                                     className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1 font-bold"
                                 >
@@ -832,7 +942,7 @@ function GalleryEditor() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={openGalleryVideoUpload}
+                                    onClick={() => selectedMediaFile && uploadFileToCloudinary(selectedMediaFile, 'video')}
                                     disabled={!selectedMediaFile || uploading}
                                     className="text-xs px-4 py-2 bg-accent/20 hover:bg-accent/30 disabled:opacity-50 border border-accent/30 text-accent tracking-wider disabled:cursor-not-allowed flex-1 font-bold"
                                 >
