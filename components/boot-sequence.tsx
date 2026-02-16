@@ -20,6 +20,29 @@ const BOOT_LINES = [
 export function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [visibleLines, setVisibleLines] = useState<number>(0)
   const [complete, setComplete] = useState(false)
+  const [operatorName, setOperatorName] = useState<string>("LOADING...")
+  const [operatorStatus, setOperatorStatus] = useState<string>("SCANNING...")
+
+  useEffect(() => {
+    // Fetch operator name
+    async function fetchOperatorName() {
+      try {
+        const response = await fetch('/api/content')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.home?.title) {
+            setOperatorName(data.home.title.toUpperCase())
+            setOperatorStatus("IDENTIFIED")
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch operator name", error)
+        setOperatorName("UNKNOWN OPERATOR")
+        setOperatorStatus("ERROR")
+      }
+    }
+    fetchOperatorName()
+  }, [])
 
   useEffect(() => {
     const timers: NodeJS.Timeout[] = []
@@ -41,7 +64,21 @@ export function BootSequence({ onComplete }: { onComplete: () => void }) {
   }, [onComplete])
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen p-6">
+    <div className="flex flex-col items-center justify-center h-screen p-6 relative">
+      {/* User identification in top left */}
+      <div className="absolute top-4 left-4 border border-accent/50 p-3 bg-background/40 backdrop-blur-sm max-w-xs">
+        <div className="text-[9px] text-muted-foreground tracking-widest mb-1">OPERATOR PROFILE</div>
+        <div className="text-xs text-accent text-glow-bright font-bold tracking-wider mb-2">
+          {operatorName}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 ${operatorStatus === "IDENTIFIED" ? "bg-accent animate-pulse-glow" : "bg-yellow-500"}`} />
+          <span className="text-[8px] text-foreground/70 tracking-widest">
+            {operatorStatus}
+          </span>
+        </div>
+      </div>
+
       <div className="max-w-2xl w-full">
         <div className="mb-8 text-center">
           <pre className="text-foreground text-glow text-xs leading-tight">
