@@ -2165,7 +2165,156 @@ function ContentEditor({ section, data, onUpdate }: { section: string, data: any
     )
 }
 
-// 4. Custom Page Editor
+// 4. Featured Items Manager
+function FeaturedManager() {
+    const [projects, setProjects] = useState<any[]>([])
+    const [gallery, setGallery] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetchItems()
+    }, [])
+
+    async function fetchItems() {
+        try {
+            const [projectsRes, galleryRes] = await Promise.all([
+                fetch('/api/projects'),
+                fetch('/api/gallery')
+            ])
+            const projectsData = projectsRes.ok ? await projectsRes.json() : []
+            const galleryData = galleryRes.ok ? await galleryRes.json() : []
+            setProjects(projectsData)
+            setGallery(galleryData)
+        } catch (e) {
+            console.error('Failed to fetch featured items:', e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function toggleFeatured(id: string, source: 'project' | 'gallery', currentStatus: boolean) {
+        try {
+            const endpoint = source === 'project' ? '/api/projects' : '/api/gallery'
+            const item = source === 'project' 
+                ? projects.find(p => p.id === id)
+                : gallery.find(g => g.id === id)
+
+            if (!item) return
+
+            const method = 'PUT'
+            const response = await fetch(endpoint, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...item, featured: !currentStatus })
+            })
+
+            if (response.ok) {
+                fetchItems()
+            }
+        } catch (e) {
+            console.error('Failed to toggle featured:', e)
+        }
+    }
+
+    if (loading) return <div className="text-accent animate-pulse">LOADING FEATURED ITEMS...</div>
+
+    const featuredProjects = projects.filter(p => p.featured)
+    const featuredGallery = gallery.filter(g => g.featured)
+
+    return (
+        <div className="space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
+                <div className="border border-border p-4 bg-background/20">
+                    <div className="text-[9px] text-muted-foreground tracking-widest mb-2">FEATURED PROJECTS</div>
+                    <div className="text-3xl font-bold text-accent">{featuredProjects.length}</div>
+                </div>
+                <div className="border border-border p-4 bg-background/20">
+                    <div className="text-[9px] text-muted-foreground tracking-widest mb-2">FEATURED ARTIFACTS</div>
+                    <div className="text-3xl font-bold text-accent">{featuredGallery.length}</div>
+                </div>
+                <div className="border border-border p-4 bg-background/20">
+                    <div className="text-[9px] text-muted-foreground tracking-widest mb-2">TOTAL ON DASHBOARD</div>
+                    <div className="text-3xl font-bold text-accent">{featuredProjects.length + featuredGallery.length}</div>
+                </div>
+            </div>
+
+            {/* Featured Projects */}
+            <div className="space-y-2">
+                <h3 className="text-accent font-bold text-lg">FEATURED PROJECTS</h3>
+                <div className="space-y-1">
+                    {projects.length === 0 ? (
+                        <div className="text-xs text-muted-foreground p-4 border border-dashed border-border">No projects available</div>
+                    ) : (
+                        projects.map(p => (
+                            <div key={p.id} className="flex items-center justify-between p-3 bg-background/20 border border-border hover:border-accent/30 transition-colors group">
+                                <div className="flex items-center gap-3 flex-1">
+                                    {p.image && (
+                                        <img src={p.image} alt={p.title} crossOrigin="anonymous" className="w-8 h-8 object-cover border border-border" />
+                                    )}
+                                    <div>
+                                        <div className="text-sm font-bold">{p.title}</div>
+                                        <div className="text-[9px] text-muted-foreground">{p.tags?.join(", ") || "No tags"}</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => toggleFeatured(p.id, 'project', p.featured)}
+                                    className={`text-xs px-4 py-2 border transition-colors ${
+                                        p.featured
+                                            ? "bg-accent/20 border-accent text-accent hover:bg-accent/10 font-bold"
+                                            : "bg-background/50 border-border text-muted-foreground hover:border-accent/30"
+                                    }`}
+                                >
+                                    {p.featured ? "★ FEATURED" : "ADD TO DASHBOARD"}
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+
+            {/* Featured Gallery Items */}
+            <div className="space-y-2">
+                <h3 className="text-accent font-bold text-lg">FEATURED ARTIFACTS</h3>
+                <div className="space-y-1">
+                    {gallery.length === 0 ? (
+                        <div className="text-xs text-muted-foreground p-4 border border-dashed border-border">No gallery items available</div>
+                    ) : (
+                        gallery.map(g => (
+                            <div key={g.id} className="flex items-center justify-between p-3 bg-background/20 border border-border hover:border-accent/30 transition-colors group">
+                                <div className="flex items-center gap-3 flex-1">
+                                    <div className="w-8 h-8 bg-foreground/5 border border-border overflow-hidden">
+                                        {g.mediaUrl ? (
+                                            g.mediaType === 'video' ?
+                                                <video key={g.mediaUrl} src={g.mediaUrl} crossOrigin="anonymous" preload="metadata" className="w-full h-full object-cover" muted /> :
+                                                <img key={g.mediaUrl} src={g.mediaUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt={g.title} />
+                                        ) : null}
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-bold">{g.title}</div>
+                                        <div className="text-[9px] text-muted-foreground">{g.category} // {g.year}</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => toggleFeatured(g.id, 'gallery', g.featured)}
+                                    className={`text-xs px-4 py-2 border transition-colors ${
+                                        g.featured
+                                            ? "bg-accent/20 border-accent text-accent hover:bg-accent/10 font-bold"
+                                            : "bg-background/50 border-border text-muted-foreground hover:border-accent/30"
+                                    }`}
+                                >
+                                    {g.featured ? "★ FEATURED" : "ADD TO DASHBOARD"}
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// 5. Custom Page Editor
 function CustomPageManager({ pages, onUpdate }: { pages: CustomPage[], onUpdate: () => void }) {
     const [editingPage, setEditingPage] = useState<CustomPage | null>(null)
     const [isNew, setIsNew] = useState(false)
@@ -2318,6 +2467,7 @@ export default function AdminPage() {
                     <div className="mt-4 px-4 py-2 text-[10px] text-muted-foreground tracking-widest">DATABASE</div>
                     <SidebarItem label="PROJECTS" isActive={activeTab === "projects"} onClick={() => setActiveTab("projects")} />
                     <SidebarItem label="GALLERY" isActive={activeTab === "gallery"} onClick={() => setActiveTab("gallery")} />
+                    <SidebarItem label="FEATURED" isActive={activeTab === "featured"} onClick={() => setActiveTab("featured")} />
 
                     <div className="mt-4 px-4 py-2 text-[10px] text-muted-foreground tracking-widest">SYSTEM</div>
                     <SidebarItem label="CUSTOM PAGES" isActive={activeTab === "custom-pages"} onClick={() => setActiveTab("custom-pages")} />
@@ -2349,6 +2499,8 @@ export default function AdminPage() {
                             <ProjectEditor />
                         ) : activeTab === "gallery" ? (
                             <GalleryEditor />
+                        ) : activeTab === "featured" ? (
+                            <FeaturedManager />
                         ) : activeTab === "custom-pages" ? (
                             <CustomPageManager pages={content?.customPages || []} onUpdate={fetchContent} />
                         ) : activeTab === "home" ? (
