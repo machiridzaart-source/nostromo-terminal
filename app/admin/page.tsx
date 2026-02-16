@@ -565,18 +565,40 @@ function SectionEditor({ sections, onChange }: { sections: Section[], onChange: 
         const newMedia: SectionMedia[] = []
 
         for (let i = 0; i < files.length; i++) {
-            const formData = new FormData()
-            formData.append('file', files[i])
+            const file = files[i]
+            const isVideo = file.type.startsWith('video')
+            const resourceType = isVideo ? 'video' : 'image'
+
             try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData })
-                const data = await res.json()
-                if (data.success) {
+                const formData = new FormData()
+                formData.append('file', file)
+                formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'unsigned_upload')
+                formData.append('resource_type', resourceType)
+
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
+                    {
+                        method: 'POST',
+                        body: formData,
+                    }
+                )
+
+                if (!response.ok) {
+                    const error = await response.json()
+                    console.error(`Failed to upload ${resourceType}:`, error)
+                    continue
+                }
+
+                const data = await response.json()
+                if (data.secure_url) {
                     newMedia.push({
-                        url: data.url,
-                        type: files[i].type.startsWith('video') ? 'video' : 'image'
+                        url: data.secure_url,
+                        type: resourceType as 'image' | 'video'
                     })
                 }
-            } catch (err) { console.error(err) }
+            } catch (err) {
+                console.error(`Error uploading ${resourceType}:`, err)
+            }
         }
 
         const currentSection = sections[sectionIndex]
