@@ -1581,54 +1581,270 @@ function SkillsContentEditor({ data, onUpdate }: { data: any, onUpdate: () => vo
 
 // 4. Contact Content Editor
 function ContactContentEditor({ data, onUpdate }: { data: any, onUpdate: () => void }) {
+    const [viewMode, setViewMode] = useState<"form" | "json">("form")
+    const [formData, setFormData] = useState({
+        title: "",
+        subtitle: "",
+        email: "",
+        social: "",
+        location: "",
+        availability: "",
+        availabilityDesc: "",
+        encryption: [] as string[]
+    })
     const [jsonContent, setJsonContent] = useState(() => {
         return data ? JSON.stringify(data, null, 2) : "{}"
     })
+    const [encryptionInput, setEncryptionInput] = useState("")
     const [showSaveNotif, setShowSaveNotif] = useState(false)
 
     useEffect(() => {
         if (data) {
+            setFormData({
+                title: data.title || "",
+                subtitle: data.subtitle || "",
+                email: data.email || "",
+                social: data.social || "",
+                location: data.location || "",
+                availability: data.availability || "",
+                availabilityDesc: data.availabilityDesc || "",
+                encryption: data.encryption || []
+            })
             setJsonContent(JSON.stringify(data, null, 2))
         }
     }, [data])
 
-    async function handleSave() {
+    async function handleSave(e: React.FormEvent) {
+        e.preventDefault()
         try {
-            const parsed = JSON.parse(jsonContent)
+            let updatedData
+            if (viewMode === "json") {
+                updatedData = JSON.parse(jsonContent)
+            } else {
+                updatedData = {
+                    ...data,
+                    title: formData.title,
+                    subtitle: formData.subtitle,
+                    email: formData.email,
+                    social: formData.social,
+                    location: formData.location,
+                    availability: formData.availability,
+                    availabilityDesc: formData.availabilityDesc,
+                    encryption: formData.encryption
+                }
+            }
+            
             await fetch('/api/content', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ section: "contact", data: parsed })
+                body: JSON.stringify({ section: "contact", data: updatedData })
             })
             setShowSaveNotif(true)
             setTimeout(() => setShowSaveNotif(false), 3000)
             onUpdate()
         } catch (e) {
             console.error(e)
-            alert("Invalid JSON format. Please check your edits.")
+            alert("Failed to save. Please check your input.")
         }
+    }
+
+    function handleAddEncryption() {
+        const enc = encryptionInput.trim()
+        if (enc && !formData.encryption.includes(enc)) {
+            setFormData({
+                ...formData,
+                encryption: [...formData.encryption, enc]
+            })
+            setEncryptionInput("")
+        }
+    }
+
+    function handleRemoveEncryption(index: number) {
+        setFormData({
+            ...formData,
+            encryption: formData.encryption.filter((_, i) => i !== index)
+        })
     }
 
     return (
         <>
             <SaveNotification show={showSaveNotif} message="Contact section saved successfully" />
-            <div className="space-y-4 h-full flex flex-col">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-accent text-lg font-bold">JSON TEMPLATE: CONTACT</h3>
-                    <button onClick={handleSave} className="bg-accent text-background px-4 py-1 text-xs font-bold hover:bg-accent/80">
-                        SAVE JSON
-                    </button>
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                    Edit the raw JSON structure for contact section. Be careful with formatting.
-                </p>
-                <textarea
-                    className="flex-1 w-full bg-background/20 border border-border p-4 font-mono text-xs text-foreground/80 outline-none focus:border-accent/50 resize-none"
-                    value={jsonContent}
-                    onChange={e => setJsonContent(e.target.value)}
-                    spellCheck={false}
-                />
+            <div className="space-y-4 mb-4 flex gap-2">
+                <button
+                    type="button"
+                    onClick={() => setViewMode("form")}
+                    className={`text-xs px-4 py-2 font-bold tracking-wider ${
+                        viewMode === "form"
+                            ? "bg-accent text-background"
+                            : "bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20"
+                    }`}
+                >
+                    FORM EDITOR
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setViewMode("json")}
+                    className={`text-xs px-4 py-2 font-bold tracking-wider ${
+                        viewMode === "json"
+                            ? "bg-accent text-background"
+                            : "bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20"
+                    }`}
+                >
+                    JSON TEMPLATE
+                </button>
             </div>
+
+            {viewMode === "form" ? (
+                <form onSubmit={handleSave} className="space-y-6">
+                    <div className="space-y-4">
+                        {/* Title */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">SECTION TITLE</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                                value={formData.title}
+                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                placeholder="e.g., TRANSMIT MESSAGE"
+                                required
+                            />
+                        </div>
+
+                        {/* Subtitle */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">SUBTITLE</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                                value={formData.subtitle}
+                                onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
+                                placeholder="e.g., // COMMUNICATION CHANNEL"
+                            />
+                        </div>
+
+                        {/* Email */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">EMAIL ADDRESS</label>
+                            <input
+                                type="email"
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                placeholder="e.g., hello@example.com"
+                                required
+                            />
+                        </div>
+
+                        {/* Social */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">SOCIAL HANDLE</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                                value={formData.social}
+                                onChange={e => setFormData({ ...formData, social: e.target.value })}
+                                placeholder="e.g., @yourhandle"
+                            />
+                        </div>
+
+                        {/* Location */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">LOCATION</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                                value={formData.location}
+                                onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                placeholder="e.g., GLOBAL // REMOTE"
+                            />
+                        </div>
+
+                        {/* Availability Status */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">AVAILABILITY STATUS</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                                value={formData.availability}
+                                onChange={e => setFormData({ ...formData, availability: e.target.value })}
+                                placeholder="e.g., ACCEPTING COMMISSIONS"
+                            />
+                        </div>
+
+                        {/* Availability Description */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] text-muted-foreground tracking-widest font-bold">AVAILABILITY DESCRIPTION</label>
+                            <textarea
+                                className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50 h-24"
+                                value={formData.availabilityDesc}
+                                onChange={e => setFormData({ ...formData, availabilityDesc: e.target.value })}
+                                placeholder="Describe your availability and response time..."
+                            />
+                        </div>
+                    </div>
+
+                    {/* Encryption/Security Section */}
+                    <div className="border border-border p-4 bg-background/20 space-y-3">
+                        <h4 className="text-xs font-bold text-accent tracking-wider">ENCRYPTION / SECURITY FEATURES</h4>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground flex-1 placeholder-muted-foreground/50"
+                                value={encryptionInput}
+                                onChange={e => setEncryptionInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddEncryption())}
+                                placeholder="Add security feature (e.g., AES-256 ENABLED)..."
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddEncryption}
+                                className="bg-accent/10 hover:bg-accent/20 text-accent text-xs px-3 py-2 border border-accent/20"
+                            >
+                                +
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {formData.encryption.map((enc, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-background/30 px-3 py-2 border border-border/50 text-xs">
+                                    <span className="text-foreground">{enc}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveEncryption(idx)}
+                                        className="text-accent/60 hover:text-accent font-bold"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <button type="submit" className="w-full bg-accent text-background font-bold py-3 hover:bg-accent/80 transition-colors tracking-wider">
+                        SAVE CONTACT DETAILS
+                    </button>
+                </form>
+            ) : (
+                <div className="space-y-4 h-full flex flex-col">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-accent text-lg font-bold">RAW JSON TEMPLATE</h3>
+                        <button 
+                            onClick={handleSave}
+                            className="bg-accent text-background px-4 py-1 text-xs font-bold hover:bg-accent/80"
+                        >
+                            SAVE JSON
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                        Edit the raw JSON structure. Be careful with formatting.
+                    </p>
+                    <textarea
+                        className="flex-1 w-full bg-background/20 border border-border p-4 font-mono text-xs text-foreground/80 outline-none focus:border-accent/50 resize-none"
+                        value={jsonContent}
+                        onChange={e => setJsonContent(e.target.value)}
+                        spellCheck={false}
+                    />
+                </div>
+            )}
         </>
     )
 }
