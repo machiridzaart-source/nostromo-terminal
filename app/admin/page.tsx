@@ -830,13 +830,17 @@ function GalleryEditor() {
         try {
             const res = await fetch('/api/gallery')
             const data = await res.json()
+            console.log('Fetched gallery items:', data)
             // Ensure all items have featured property
             const itemsWithDefaults = data.map((item: GalleryItem) => ({
                 ...item,
                 featured: item.featured ?? false
             }))
+            console.log('Items with defaults:', itemsWithDefaults)
             setItems(itemsWithDefaults)
-        } catch (e) { console.error(e) }
+        } catch (e) { 
+            console.error('Gallery fetch error:', e) 
+        }
         finally { setLoading(false) }
     }
 
@@ -844,15 +848,23 @@ function GalleryEditor() {
         e.preventDefault()
         if (!editingItem) return
         const method = isNew ? 'POST' : 'PUT'
-        await fetch('/api/gallery', {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(editingItem)
-        })
-        setShowSaveNotif(true)
-        setTimeout(() => setShowSaveNotif(false), 3000)
-        setEditingItem(null)
-        fetchGallery()
+        console.log('Saving gallery item:', { method, editingItem })
+        try {
+            const response = await fetch('/api/gallery', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editingItem)
+            })
+            const result = await response.json()
+            console.log('Gallery save response:', result)
+            setShowSaveNotif(true)
+            setTimeout(() => setShowSaveNotif(false), 3000)
+            setEditingItem(null)
+            fetchGallery()
+        } catch (error) {
+            console.error('Gallery save error:', error)
+            alert('Failed to save gallery item')
+        }
     }
 
     async function handleDelete(id: string) {
