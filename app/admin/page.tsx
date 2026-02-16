@@ -38,6 +38,7 @@ interface GalleryItem {
     desc: string
     mediaUrl: string
     mediaType: "image" | "video"
+    featured?: boolean
 }
 
 interface CustomPage {
@@ -829,7 +830,12 @@ function GalleryEditor() {
         try {
             const res = await fetch('/api/gallery')
             const data = await res.json()
-            setItems(data)
+            // Ensure all items have featured property
+            const itemsWithDefaults = data.map((item: GalleryItem) => ({
+                ...item,
+                featured: item.featured ?? false
+            }))
+            setItems(itemsWithDefaults)
         } catch (e) { console.error(e) }
         finally { setLoading(false) }
     }
@@ -1024,7 +1030,7 @@ function GalleryEditor() {
                                     ) : null}
                                 </div>
                                 <div>
-                                    <div className="text-sm font-bold">{p.title}</div>
+                                    <div className="text-sm font-bold">{p.title}{p.featured ? " ★" : ""}</div>
                                     <div className="text-[10px] text-muted-foreground">{p.category} // {p.mediaType.toUpperCase()}</div>
                                 </div>
                             </div>
