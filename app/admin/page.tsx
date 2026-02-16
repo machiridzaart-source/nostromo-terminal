@@ -1255,8 +1255,10 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
             location: "",
             clearance: "",
             specialty: ""
-        }
+        },
+        timeline: [] as Array<{ year: string; event: string; desc: string }>
     })
+    const [timelineInput, setTimelineInput] = useState({ year: "", event: "", desc: "" })
     const [showSaveNotif, setShowSaveNotif] = useState(false)
 
     useEffect(() => {
@@ -1271,7 +1273,8 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
                     location: "",
                     clearance: "",
                     specialty: ""
-                }
+                },
+                timeline: data.timeline || []
             })
         }
     }, [data])
@@ -1285,7 +1288,8 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
                 designation: formData.designation,
                 bio: formData.bio,
                 bioSecond: formData.bioSecond,
-                stats: formData.stats
+                stats: formData.stats,
+                timeline: formData.timeline
             }
             
             await fetch('/api/content', {
@@ -1300,6 +1304,28 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
             console.error(e)
             alert("Failed to save")
         }
+    }
+
+    function handleAddTimelineEntry() {
+        if (timelineInput.year && timelineInput.event) {
+            const newTimeline = {
+                year: timelineInput.year,
+                event: timelineInput.event.toUpperCase(),
+                desc: timelineInput.desc
+            }
+            setFormData({
+                ...formData,
+                timeline: [...formData.timeline, newTimeline]
+            })
+            setTimelineInput({ year: "", event: "", desc: "" })
+        }
+    }
+
+    function handleRemoveTimelineEntry(index: number) {
+        setFormData({
+            ...formData,
+            timeline: formData.timeline.filter((_, i) => i !== index)
+        })
     }
 
     return (
@@ -1412,6 +1438,79 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
                                 placeholder="e.g., VISUAL ARTS"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* Service Record / Timeline */}
+                <div className="border border-border p-4 bg-background/20 space-y-4">
+                    <h4 className="text-xs font-bold text-accent tracking-wider">SERVICE RECORD [TIMELINE]</h4>
+                    
+                    {/* Timeline Input */}
+                    <div className="space-y-3 border-b border-border pb-4">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] text-muted-foreground tracking-widest">YEAR</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground"
+                                value={timelineInput.year}
+                                onChange={e => setTimelineInput({ ...timelineInput, year: e.target.value })}
+                                placeholder="e.g., 2020"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] text-muted-foreground tracking-widest">EVENT</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground"
+                                value={timelineInput.event}
+                                onChange={e => setTimelineInput({ ...timelineInput, event: e.target.value })}
+                                placeholder="e.g., JOINED STUDIO"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] text-muted-foreground tracking-widest">DESCRIPTION</label>
+                            <textarea
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground h-16"
+                                value={timelineInput.desc}
+                                onChange={e => setTimelineInput({ ...timelineInput, desc: e.target.value })}
+                                placeholder="Details about this milestone..."
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleAddTimelineEntry}
+                            className="w-full bg-accent/50 text-accent hover:bg-accent/70 font-bold py-2 text-xs transition-colors tracking-wider border border-accent"
+                        >
+                            + ADD TIMELINE ENTRY
+                        </button>
+                    </div>
+
+                    {/* Timeline List */}
+                    <div className="space-y-3 max-h-72 overflow-y-auto">
+                        {formData.timeline.length === 0 ? (
+                            <p className="text-[9px] text-muted-foreground italic">No timeline entries yet</p>
+                        ) : (
+                            formData.timeline.map((entry, idx) => (
+                                <div key={idx} className="bg-background/30 border border-border/50 p-3 space-y-2">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <div className="flex-1">
+                                            <p className="text-[9px] text-accent font-bold tracking-wider">{entry.year}</p>
+                                            <p className="text-xs font-bold tracking-wide text-foreground">{entry.event}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveTimelineEntry(idx)}
+                                            className="text-red-500 hover:text-red-400 text-xs font-bold px-2 py-1 transition-colors"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    {entry.desc && (
+                                        <p className="text-[8px] text-muted-foreground leading-relaxed">{entry.desc}</p>
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
