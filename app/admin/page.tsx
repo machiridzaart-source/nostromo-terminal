@@ -984,6 +984,15 @@ function GalleryEditor() {
                         )}
                     </div>
 
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={!!editingItem.featured}
+                            onChange={e => setEditingItem({ ...editingItem, featured: e.target.checked })}
+                        />
+                        <label className="text-xs">FEATURED ARTIFACT</label>
+                    </div>
+
                     <button type="submit" className="bg-accent text-background font-bold py-2 hover:bg-accent/80 transition-colors">SAVE ARTIFACT</button>
                 </form>
             </div>
@@ -997,7 +1006,7 @@ function GalleryEditor() {
                 <div className="flex justify-between items-center bg-background/30 p-2 border border-border">
                     <h3 className="text-sm font-bold tracking-widest pl-2">GALLERY ARTIFACTS</h3>
                     <button
-                        onClick={() => { setIsNew(true); setEditingItem({ id: "", title: "", category: "STORYBOARDS", year: new Date().getFullYear().toString(), desc: "", mediaUrl: "", mediaType: "image" }); }}
+                        onClick={() => { setIsNew(true); setEditingItem({ id: "", title: "", category: "STORYBOARDS", year: new Date().getFullYear().toString(), desc: "", mediaUrl: "", mediaType: "image", featured: false }); }}
                         className="bg-accent/10 hover:bg-accent/20 text-accent text-xs px-3 py-1 border border-accent/20"
                     >
                         + NEW ARTIFACT

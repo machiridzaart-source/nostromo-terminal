@@ -6,7 +6,8 @@
     "year": "2026",
     "desc": "eretrtert",
     "mediaUrl": "/uploads/grab-1771082047720-121550732.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "Giant",
@@ -15,7 +16,8 @@
     "year": "2025",
     "desc": "Giant rising from the ashes",
     "mediaUrl": "/uploads/temple statue-1771084370977-949483274.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": true
   },
   {
     "id": "PREP",
@@ -24,7 +26,8 @@
     "year": "2025",
     "desc": "unsheathing the sword",
     "mediaUrl": "/uploads/Untitmnmled-1771084467447-914188916.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "XM",
@@ -33,7 +36,8 @@
     "year": "2026",
     "desc": "The X-men Fight to protect the Tower in The Otherworld",
     "mediaUrl": "/uploads/anihilation-1771085352423-523588222.mov",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "YA",
@@ -42,7 +46,8 @@
     "year": "2025",
     "desc": "Yra and Ania new designs",
     "mediaUrl": "/uploads/YraandAnia-1771087101094-602869818.png",
-    "mediaType": "image"
+    "mediaType": "image",
+    "featured": false
   },
   {
     "id": "BR",
@@ -51,7 +56,8 @@
     "year": "2025",
     "desc": "elemental crossing ",
     "mediaUrl": "/uploads/cavern-1771092101326-581859197.mov",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "YRA",
@@ -60,7 +66,8 @@
     "year": "2025",
     "desc": "Yra animation test",
     "mediaUrl": "/uploads/yra-1771093784318-176944338.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "HAL",
@@ -69,7 +76,8 @@
     "year": "2025",
     "desc": "Last Halloween",
     "mediaUrl": "/uploads/monster-1771093869942-936523239.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "PYERBG",
@@ -78,7 +86,8 @@
     "year": "2026",
     "desc": "one the the Background for Pyerlords",
     "mediaUrl": "/uploads/DOme 2q-1771094156605-928285502.png",
-    "mediaType": "image"
+    "mediaType": "image",
+    "featured": false
   },
   {
     "id": "THB",
@@ -87,7 +96,8 @@
     "year": "2026",
     "desc": "The Hunt",
     "mediaUrl": "/uploads/The Hunt Boardsa-1771094708311-814968803.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "007",
@@ -96,7 +106,8 @@
     "year": "2025",
     "desc": "chopping",
     "mediaUrl": "/uploads/SH007-1771095871643-68857387.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   },
   {
     "id": "BOW",
@@ -105,6 +116,7 @@
     "year": "2026",
     "desc": "Yra and Ania travel the known space in search for The World-Mind, a relic made by the humans before they disappeared. ",
     "mediaUrl": "/uploads/Comp 1-1771157414741-40352356.mp4",
-    "mediaType": "video"
+    "mediaType": "video",
+    "featured": false
   }
 ]
