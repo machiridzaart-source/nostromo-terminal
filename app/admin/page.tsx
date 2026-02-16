@@ -1321,10 +1321,10 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
         }
     }
 
-    function handleRemoveTimelineEntry(index: number) {
+    function handleRemoveTimelineEntry(entry: { year: string; event: string; desc: string }) {
         setFormData({
             ...formData,
-            timeline: formData.timeline.filter((_, i) => i !== index)
+            timeline: formData.timeline.filter(e => !(e.year === entry.year && e.event === entry.event && e.desc === entry.desc))
         })
     }
 
@@ -1490,8 +1490,14 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
                         {formData.timeline.length === 0 ? (
                             <p className="text-[9px] text-muted-foreground italic">No timeline entries yet</p>
                         ) : (
-                            formData.timeline.map((entry, idx) => (
-                                <div key={idx} className="bg-background/30 border border-border/50 p-3 space-y-2">
+                            [...formData.timeline]
+                                .sort((a, b) => {
+                                    const yearA = parseInt(a.year) || 0
+                                    const yearB = parseInt(b.year) || 0
+                                    return yearB - yearA // descending order (most recent first)
+                                })
+                                .map((entry) => (
+                                <div key={`${entry.year}-${entry.event}`} className="bg-background/30 border border-border/50 p-3 space-y-2">
                                     <div className="flex justify-between items-start gap-2">
                                         <div className="flex-1">
                                             <p className="text-[9px] text-accent font-bold tracking-wider">{entry.year}</p>
@@ -1499,7 +1505,7 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => handleRemoveTimelineEntry(idx)}
+                                            onClick={() => handleRemoveTimelineEntry(entry)}
                                             className="text-red-500 hover:text-red-400 text-xs font-bold px-2 py-1 transition-colors"
                                         >
                                             ✕
