@@ -43,8 +43,9 @@ export function FeaturedCarousel() {
                 const galleryData = galleryRes.ok ? await galleryRes.json() : []
                 const projectsData = projectsRes.ok ? await projectsRes.json() : []
 
-                // Convert gallery items to featured format
-                const galleryItems: FeaturedItem[] = galleryData.slice(0, 2).map((item: any) => ({
+                // Filter featured gallery items
+                const featuredGalleryItems = galleryData.filter((item: any) => item.featured)
+                const galleryItems: FeaturedItem[] = featuredGalleryItems.slice(0, 4).map((item: any) => ({
                     id: item.id,
                     title: item.title,
                     mediaUrl: item.mediaUrl,
@@ -55,23 +56,21 @@ export function FeaturedCarousel() {
                     desc: item.desc
                 }))
 
-                // Convert projects to featured format (prioritize featured projects)
+                // Filter featured projects
                 const featuredProjects = projectsData.filter((p: any) => p.featured)
-                const projectItems: FeaturedItem[] = (featuredProjects.length > 0 ? featuredProjects : projectsData)
-                    .slice(0, 2)
-                    .map((project: any) => ({
-                        id: project.id,
-                        title: project.title,
-                        mediaUrl: project.video || project.image,
-                        mediaType: project.video ? "video" : "image",
-                        source: "project" as const,
-                        category: "PROJECT",
-                        year: project.year || "2026",
-                        desc: project.desc || ""
-                    }))
+                const projectItems: FeaturedItem[] = featuredProjects.slice(0, 4).map((project: any) => ({
+                    id: project.id,
+                    title: project.title,
+                    mediaUrl: project.video || project.image,
+                    mediaType: project.video ? "video" : "image",
+                    source: "project" as const,
+                    category: "PROJECT",
+                    year: project.year || "2026",
+                    desc: project.desc || ""
+                }))
 
-                // Combine and take first 4
-                const combined = [...projectItems, ...galleryItems].slice(0, 4)
+                // Combine featured items and take first 8
+                const combined = [...projectItems, ...galleryItems].slice(0, 8)
                 setItems(combined)
 
                 // Create unified list for lightbox navigation
@@ -104,6 +103,9 @@ export function FeaturedCarousel() {
         }
 
         fetchFeaturedItems()
+        // Refresh featured items every 5 seconds so changes appear immediately in admin
+        const interval = setInterval(fetchFeaturedItems, 5000)
+        return () => clearInterval(interval)
     }, [])
 
     const handleItemClick = (item: FeaturedItem) => {

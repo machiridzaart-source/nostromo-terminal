@@ -12,6 +12,7 @@ interface GalleryItem {
   desc: string
   mediaUrl: string
   mediaType: "image" | "video"
+  featured?: boolean
 }
 
 // Default colors for visual consistency if not provided in data
@@ -98,7 +99,7 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
       {/* Info Overlay (always visible at bottom) */}
       <div className="absolute bottom-0 left-0 right-0 p-2 bg-background/90 border-t border-border z-20">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] text-foreground text-glow font-bold tracking-wider truncate">{piece.title}</span>
+          <span className="text-[10px] text-foreground text-glow font-bold tracking-wider truncate">{piece.title}{piece.featured ? " ★" : ""}</span>
         </div>
         <div className="flex items-center gap-2 text-[8px] text-muted-foreground tracking-wider">
           <span className="px-1 py-0.5 panel-border">{piece.category}</span>
@@ -129,6 +130,9 @@ export function GallerySection() {
       }
     }
     fetchGallery()
+    // Refresh gallery every 5 seconds for dynamic updates
+    const interval = setInterval(fetchGallery, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   const filtered = filter === "ALL" ? galleryItems : galleryItems.filter((p) => p.category === filter)

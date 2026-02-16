@@ -16,6 +16,7 @@ interface Project {
   link?: string
   image?: string
   video?: string
+  featured?: boolean
   sections?: {
     id: string
     title?: string // Optional section title
@@ -51,6 +52,9 @@ export function ProjectsSection() {
       }
     }
     fetchProjects()
+    // Refresh projects every 5 seconds for dynamic updates
+    const interval = setInterval(fetchProjects, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   const filtered = filter === "ALL" ? projects : projects.filter((p) => p.category === filter)
@@ -87,7 +91,7 @@ export function ProjectsSection() {
                 {selectedProject.id} // {selectedProject.year}
               </div>
               <h2 className="text-xl font-bold text-foreground text-glow-bright tracking-wider">
-                {selectedProject.title}
+                {selectedProject.title}{selectedProject.featured ? " ★" : ""}
               </h2>
               <div className="text-[10px] text-accent tracking-widest mt-1">
                 {selectedProject.category}
@@ -289,7 +293,7 @@ export function ProjectsSection() {
             </div>
 
             <h3 className="text-sm font-bold text-foreground text-glow tracking-wider group-hover:text-glow-bright transition-all mb-1">
-              {project.title}
+              {project.title}{project.featured ? " ★" : ""}
             </h3>
 
             <div className="text-[10px] text-muted-foreground tracking-wider mb-3">
