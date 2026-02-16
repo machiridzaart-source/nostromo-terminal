@@ -1281,7 +1281,359 @@ function AboutContentEditor({ data, onUpdate }: { data: any, onUpdate: () => voi
     )
 }
 
-// 4. Content Editor (JSON)
+// 3C. Skills Section Editor
+function SkillsContentEditor({ data, onUpdate }: { data: any, onUpdate: () => void }) {
+    const [viewMode, setViewMode] = useState<"form" | "json">("form")
+    const [formData, setFormData] = useState({
+        title: "",
+        subtitle: "",
+        list: [] as Array<{ name: string; level: number; category: string }>,
+        categories: [] as string[]
+    })
+    const [jsonContent, setJsonContent] = useState(() => {
+        return data ? JSON.stringify(data, null, 2) : "{}"
+    })
+    const [skillInput, setSkillInput] = useState({ name: "", level: 50, category: "" })
+    const [categoryInput, setCategoryInput] = useState("")
+    const [showSaveNotif, setShowSaveNotif] = useState(false)
+
+    useEffect(() => {
+        if (data) {
+            setFormData({
+                title: data.title || "",
+                subtitle: data.subtitle || "",
+                list: data.list || [],
+                categories: data.categories || []
+            })
+            setJsonContent(JSON.stringify(data, null, 2))
+        }
+    }, [data])
+
+    async function handleSave(e: React.FormEvent) {
+        e.preventDefault()
+        try {
+            let updatedData
+            if (viewMode === "json") {
+                updatedData = JSON.parse(jsonContent)
+            } else {
+                updatedData = {
+                    ...data,
+                    title: formData.title,
+                    subtitle: formData.subtitle,
+                    list: formData.list,
+                    categories: formData.categories
+                }
+            }
+            
+            await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ section: "skills", data: updatedData })
+            })
+            setShowSaveNotif(true)
+            setTimeout(() => setShowSaveNotif(false), 3000)
+            onUpdate()
+        } catch (e) {
+            console.error(e)
+            alert("Failed to save. Please check your JSON format if using JSON mode.")
+        }
+    }
+
+    function handleAddSkill() {
+        if (skillInput.name && skillInput.category) {
+            const newSkill = {
+                name: skillInput.name.toUpperCase(),
+                level: skillInput.level,
+                category: skillInput.category
+            }
+            setFormData({
+                ...formData,
+                list: [...formData.list, newSkill]
+            })
+            setSkillInput({ name: "", level: 50, category: "" })
+        }
+    }
+
+    function handleRemoveSkill(index: number) {
+        setFormData({
+            ...formData,
+            list: formData.list.filter((_, i) => i !== index)
+        })
+    }
+
+    function handleAddCategory() {
+        const cat = categoryInput.toUpperCase()
+        if (cat && !formData.categories.includes(cat)) {
+            setFormData({
+                ...formData,
+                categories: [...formData.categories, cat]
+            })
+            setCategoryInput("")
+        }
+    }
+
+    function handleRemoveCategory(category: string) {
+        setFormData({
+            ...formData,
+            categories: formData.categories.filter(c => c !== category)
+        })
+    }
+
+    return (
+        <>
+            <SaveNotification show={showSaveNotif} message="Skills section saved successfully" />
+            <div className="space-y-4 mb-4 flex gap-2">
+                <button
+                    type="button"
+                    onClick={() => setViewMode("form")}
+                    className={`text-xs px-4 py-2 font-bold tracking-wider ${
+                        viewMode === "form"
+                            ? "bg-accent text-background"
+                            : "bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20"
+                    }`}
+                >
+                    FORM EDITOR
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setViewMode("json")}
+                    className={`text-xs px-4 py-2 font-bold tracking-wider ${
+                        viewMode === "json"
+                            ? "bg-accent text-background"
+                            : "bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20"
+                    }`}
+                >
+                    JSON TEMPLATE
+                </button>
+            </div>
+
+            {viewMode === "form" ? (
+                <form onSubmit={handleSave} className="space-y-6">
+                <div className="space-y-4">
+                    {/* Title */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] text-muted-foreground tracking-widest font-bold">SECTION TITLE</label>
+                        <input
+                            type="text"
+                            className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                            value={formData.title}
+                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                            placeholder="e.g., SKILL MATRIX"
+                            required
+                        />
+                    </div>
+
+                    {/* Subtitle */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] text-muted-foreground tracking-widest font-bold">SUBTITLE</label>
+                        <input
+                            type="text"
+                            className="bg-background/50 border border-border p-3 text-sm text-foreground placeholder-muted-foreground/50"
+                            value={formData.subtitle}
+                            onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
+                            placeholder="e.g., // CAPABILITY ASSESSMENT"
+                        />
+                    </div>
+                </div>
+
+                {/* Categories Section */}
+                <div className="border border-border p-4 bg-background/20 space-y-3">
+                    <h4 className="text-xs font-bold text-accent tracking-wider">SKILL CATEGORIES</h4>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            className="bg-background/50 border border-border p-2 text-xs text-foreground flex-1 placeholder-muted-foreground/50"
+                            value={categoryInput}
+                            onChange={e => setCategoryInput(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                            placeholder="Add category (e.g., DESIGN)..."
+                        />
+                        <button
+                            type="button"
+                            onClick={handleAddCategory}
+                            className="bg-accent/10 hover:bg-accent/20 text-accent text-xs px-3 py-2 border border-accent/20"
+                        >
+                            +
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {formData.categories.map(cat => (
+                            <div key={cat} className="flex items-center gap-2 bg-accent/10 px-3 py-1 border border-accent/20 text-xs">
+                                <span>{cat}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveCategory(cat)}
+                                    className="text-accent/60 hover:text-accent font-bold"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Skills List Section */}
+                <div className="border border-border p-4 bg-background/20 space-y-4">
+                    <h4 className="text-xs font-bold text-accent tracking-wider">SKILLS LIST</h4>
+                    
+                    <div className="grid grid-cols-3 gap-3 bg-background/30 p-3 border border-border/50">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] text-muted-foreground tracking-widest">SKILL NAME</label>
+                            <input
+                                type="text"
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground"
+                                value={skillInput.name}
+                                onChange={e => setSkillInput({ ...skillInput, name: e.target.value })}
+                                placeholder="e.g., PHOTOSHOP"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] text-muted-foreground tracking-widest">PROFICIENCY (0-100)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground"
+                                value={skillInput.level}
+                                onChange={e => setSkillInput({ ...skillInput, level: parseInt(e.target.value) })}
+                                placeholder="0-100"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] text-muted-foreground tracking-widest">CATEGORY</label>
+                            <select
+                                className="bg-background/50 border border-border p-2 text-xs text-foreground"
+                                value={skillInput.category}
+                                onChange={e => setSkillInput({ ...skillInput, category: e.target.value })}
+                            >
+                                <option value="">Select...</option>
+                                {formData.categories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button
+                        type="button"
+                        onClick={handleAddSkill}
+                        disabled={!skillInput.name || !skillInput.category}
+                        className="bg-accent/10 hover:bg-accent/20 disabled:opacity-50 text-accent text-xs px-4 py-2 border border-accent/20 w-full"
+                    >
+                        + ADD SKILL
+                    </button>
+
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                        {formData.list.map((skill, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-background/30 px-3 py-2 border border-border/50 text-xs">
+                                <div className="flex-1">
+                                    <span className="text-foreground font-bold">{skill.name}</span>
+                                    <span className="text-muted-foreground ml-3">{skill.category}</span>
+                                    <span className="text-accent ml-3 tabular-nums">{skill.level}%</span>
+                                    <div className="w-full bg-background/50 h-2 mt-1 border border-border/50">
+                                        <div
+                                            className="h-full bg-accent/30"
+                                            style={{ width: `${skill.level}%` }}
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveSkill(idx)}
+                                    className="text-accent/60 hover:text-accent font-bold ml-3"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <button type="submit" className="w-full bg-accent text-background font-bold py-3 hover:bg-accent/80 transition-colors tracking-wider">
+                    SAVE SKILLS DETAILS
+                </button>
+                </form>
+            ) : (
+                <div className="space-y-4 h-full flex flex-col">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-accent text-lg font-bold">RAW JSON TEMPLATE</h3>
+                        <button 
+                            onClick={handleSave}
+                            className="bg-accent text-background px-4 py-1 text-xs font-bold hover:bg-accent/80"
+                        >
+                            SAVE JSON
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                        Edit the raw JSON structure. Be careful with formatting.
+                    </p>
+                    <textarea
+                        className="flex-1 w-full bg-background/20 border border-border p-4 font-mono text-xs text-foreground/80 outline-none focus:border-accent/50 resize-none"
+                        value={jsonContent}
+                        onChange={e => setJsonContent(e.target.value)}
+                        spellCheck={false}
+                    />
+                </div>
+            )}
+        </>
+    )
+}
+
+// 4. Contact Content Editor
+function ContactContentEditor({ data, onUpdate }: { data: any, onUpdate: () => void }) {
+    const [jsonContent, setJsonContent] = useState(() => {
+        return data ? JSON.stringify(data, null, 2) : "{}"
+    })
+    const [showSaveNotif, setShowSaveNotif] = useState(false)
+
+    useEffect(() => {
+        if (data) {
+            setJsonContent(JSON.stringify(data, null, 2))
+        }
+    }, [data])
+
+    async function handleSave() {
+        try {
+            const parsed = JSON.parse(jsonContent)
+            await fetch('/api/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ section: "contact", data: parsed })
+            })
+            setShowSaveNotif(true)
+            setTimeout(() => setShowSaveNotif(false), 3000)
+            onUpdate()
+        } catch (e) {
+            console.error(e)
+            alert("Invalid JSON format. Please check your edits.")
+        }
+    }
+
+    return (
+        <>
+            <SaveNotification show={showSaveNotif} message="Contact section saved successfully" />
+            <div className="space-y-4 h-full flex flex-col">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-accent text-lg font-bold">JSON TEMPLATE: CONTACT</h3>
+                    <button onClick={handleSave} className="bg-accent text-background px-4 py-1 text-xs font-bold hover:bg-accent/80">
+                        SAVE JSON
+                    </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                    Edit the raw JSON structure for contact section. Be careful with formatting.
+                </p>
+                <textarea
+                    className="flex-1 w-full bg-background/20 border border-border p-4 font-mono text-xs text-foreground/80 outline-none focus:border-accent/50 resize-none"
+                    value={jsonContent}
+                    onChange={e => setJsonContent(e.target.value)}
+                    spellCheck={false}
+                />
+            </div>
+        </>
+    )
+}
+
+// 5. Content Editor (JSON)
 function ContentEditor({ section, data, onUpdate }: { section: string, data: any, onUpdate: () => void }) {
     const [jsonContent, setJsonContent] = useState("")
     const [showSaveNotif, setShowSaveNotif] = useState(false)
@@ -1524,6 +1876,20 @@ export default function AdminPage() {
                             content && (
                                 <AboutContentEditor
                                     data={content.about}
+                                    onUpdate={fetchContent}
+                                />
+                            )
+                        ) : activeTab === "skills" ? (
+                            content && (
+                                <SkillsContentEditor
+                                    data={content.skills}
+                                    onUpdate={fetchContent}
+                                />
+                            )
+                        ) : activeTab === "contact" ? (
+                            content && (
+                                <ContactContentEditor
+                                    data={content.contact}
                                     onUpdate={fetchContent}
                                 />
                             )
