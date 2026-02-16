@@ -25,11 +25,38 @@ interface GalleryLikeItem {
     mediaType: "image" | "video"
 }
 
+interface ProjectDetail {
+    id: string
+    title: string
+    desc: string
+    tags: string[]
+    image?: string
+    link?: string
+    featured: boolean
+    video?: string
+    sections?: Section[]
+}
+
+interface Section {
+    id: string
+    title?: string
+    text: string
+    media: SectionMedia[]
+}
+
+interface SectionMedia {
+    url: string
+    type: "image" | "video"
+    caption?: string
+}
+
 export function FeaturedCarousel() {
     const [items, setItems] = useState<FeaturedItem[]>([])
     const [allMediaItems, setAllMediaItems] = useState<GalleryLikeItem[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedItem, setSelectedItem] = useState<GalleryLikeItem | null>(null)
+    const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
+    const [allProjects, setAllProjects] = useState<ProjectDetail[]>([])
 
     useEffect(() => {
         async function fetchFeaturedItems() {
@@ -42,6 +69,9 @@ export function FeaturedCarousel() {
 
                 const galleryData = galleryRes.ok ? await galleryRes.json() : []
                 const projectsData = projectsRes.ok ? await projectsRes.json() : []
+
+                // Store full projects for detail view
+                setAllProjects(projectsData)
 
                 // Filter featured gallery items
                 const featuredGalleryItems = galleryData.filter((item: any) => item.featured)
@@ -109,9 +139,18 @@ export function FeaturedCarousel() {
     }, [])
 
     const handleItemClick = (item: FeaturedItem) => {
-        const mediaItem = allMediaItems.find(m => m.id === item.id)
-        if (mediaItem) {
-            setSelectedItem(mediaItem)
+        if (item.source === "project") {
+            // Open full project detail
+            const project = allProjects.find(p => p.id === item.id)
+            if (project) {
+                setSelectedProject(project)
+            }
+        } else {
+            // Open gallery lightbox
+            const mediaItem = allMediaItems.find(m => m.id === item.id)
+            if (mediaItem) {
+                setSelectedItem(mediaItem)
+            }
         }
     }
 
@@ -124,6 +163,102 @@ export function FeaturedCarousel() {
     }
 
     if (items.length === 0) return null
+
+    // Render full project detail view
+    if (selectedProject) {
+        return (
+            <div className="flex flex-col gap-4 animate-boot-flicker">
+                <button
+                    onClick={() => setSelectedProject(null)}
+                    className="self-start text-xs text-muted-foreground hover:text-foreground tracking-widest transition-colors"
+                >
+                    {'<'} RETURN TO FEATURED WORKS
+                </button>
+
+                <div className="panel-border-bright p-6 bg-background/30 relative">
+                    <CornerBrackets className="text-accent/40" />
+
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                        <div>
+                            <div className="text-[9px] text-muted-foreground tracking-widest mb-1">
+                                {selectedProject.id} // {selectedProject.year || "2026"}
+                            </div>
+                            <h2 className="text-xl font-bold text-foreground text-glow-bright tracking-wider">
+                                {selectedProject.title}{selectedProject.featured ? " ★" : ""}
+                            </h2>
+                        </div>
+                    </div>
+
+                    {/* Main media */}
+                    <div className="mb-6 max-w-2xl">
+                        {selectedProject.video ? (
+                            <video src={selectedProject.video} controls className="w-full h-auto opacity-80 hover:opacity-100 transition-opacity border border-border" />
+                        ) : selectedProject.image ? (
+                            <img src={selectedProject.image} alt={selectedProject.title} crossOrigin="anonymous" className="w-full h-auto opacity-80 hover:opacity-100 transition-opacity border border-border" />
+                        ) : null}
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-6 space-y-3">
+                        <p className="text-sm text-foreground/80 leading-relaxed">{selectedProject.desc}</p>
+                        {selectedProject.tags && selectedProject.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {selectedProject.tags.map(tag => (
+                                    <span key={tag} className="text-[9px] px-2 py-1 panel-border text-foreground/60 tracking-widest">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Link */}
+                    {selectedProject.link && (
+                        <div className="mt-6">
+                            <a
+                                href={selectedProject.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-xs text-accent text-glow tracking-widest panel-border-bright px-4 py-2 hover:bg-accent/10 transition-colors"
+                            >
+                                {'>'} VIEW PROJECT {'<'}
+                            </a>
+                        </div>
+                    )}
+
+                    {/* Sections */}
+                    {selectedProject.sections && selectedProject.sections.length > 0 && (
+                        <div className="mt-6 space-y-6 border-t border-border pt-6">
+                            {selectedProject.sections.map((section, idx) => (
+                                <div key={section.id} className="space-y-3">
+                                    {section.text && (
+                                        <p className="text-sm text-foreground/70">{section.text}</p>
+                                    )}
+                                    {section.media && section.media.length > 0 && (
+                                        <div className="space-y-3">
+                                            {section.media.map((media, midx) => (
+                                                <div key={midx} className="max-w-2xl">
+                                                    {media.type === "video" ? (
+                                                        <video src={media.url} controls className="w-full h-auto border border-border" />
+                                                    ) : (
+                                                        <img src={media.url} alt="" crossOrigin="anonymous" className="w-full h-auto border border-border" />
+                                                    )}
+                                                    {media.caption && (
+                                                        <p className="text-[9px] text-muted-foreground mt-2 italic">{media.caption}</p>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <>
@@ -201,7 +336,7 @@ export function FeaturedCarousel() {
                 </div>
             </div>
 
-            {/* Lightbox for selected item */}
+            {/* Lightbox for gallery items */}
             {selectedItem && (
                 <MediaLightbox
                     item={selectedItem}
@@ -212,4 +347,3 @@ export function FeaturedCarousel() {
             )}
         </>
     )
-}
