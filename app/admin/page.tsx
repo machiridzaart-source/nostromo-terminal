@@ -127,11 +127,12 @@ function ProjectEditor() {
                 },
                 (error: any, result: any) => {
                     if (error) {
+                        console.error('Image upload error:', error)
                         setUploadError(`Image upload failed: ${error.message}`)
                         setUploadingField(null)
                         return
                     }
-                    if (result?.event === 'success') {
+                    if (result?.event === 'success' && result?.info?.secure_url) {
                         if (editingProject) {
                             setEditingProject({ ...editingProject, image: result.info.secure_url })
                             setUploadSuccess('IMAGE')
@@ -141,6 +142,8 @@ function ProjectEditor() {
                             setUploadingField(null)
                             setTimeout(() => setUploadSuccess(null), 3000)
                         }
+                    } else if (result?.event === 'close') {
+                        setUploadingField(null)
                     }
                 }
             )
@@ -156,11 +159,12 @@ function ProjectEditor() {
                 },
                 (error: any, result: any) => {
                     if (error) {
+                        console.error('Video upload error:', error)
                         setUploadError(`Video upload failed: ${error.message}`)
                         setUploadingField(null)
                         return
                     }
-                    if (result?.event === 'success') {
+                    if (result?.event === 'success' && result?.info?.secure_url) {
                         if (editingProject) {
                             setEditingProject({ ...editingProject, video: result.info.secure_url })
                             setUploadSuccess('VIDEO')
@@ -170,6 +174,8 @@ function ProjectEditor() {
                             setUploadingField(null)
                             setTimeout(() => setUploadSuccess(null), 3000)
                         }
+                    } else if (result?.event === 'close') {
+                        setUploadingField(null)
                     }
                 }
             )
@@ -633,7 +639,7 @@ function GalleryEditor() {
                 setUploadError(`Upload failed: ${error.message}`)
                 setUploading(false)
             }
-            if (result?.event === 'success') {
+            if (result?.event === 'success' && result?.info?.secure_url) {
                 setEditingItem(prev => prev ? { ...prev, mediaUrl: result.info.secure_url, mediaType: 'image' } : null)
                 setUploadSuccess('IMAGE')
                 setSelectedMediaFile(null)
@@ -641,6 +647,8 @@ function GalleryEditor() {
                 setUploadError(null)
                 setUploading(false)
                 setTimeout(() => setUploadSuccess(null), 3000)
+            } else if (result?.event === 'close') {
+                setUploading(false)
             }
         })
 
@@ -659,7 +667,7 @@ function GalleryEditor() {
                 setUploadError(`Upload failed: ${error.message}`)
                 setUploading(false)
             }
-            if (result?.event === 'success') {
+            if (result?.event === 'success' && result?.info?.secure_url) {
                 setEditingItem(prev => prev ? { ...prev, mediaUrl: result.info.secure_url, mediaType: 'video' } : null)
                 setUploadSuccess('VIDEO')
                 setSelectedMediaFile(null)
@@ -667,6 +675,8 @@ function GalleryEditor() {
                 setUploadError(null)
                 setUploading(false)
                 setTimeout(() => setUploadSuccess(null), 3000)
+            } else if (result?.event === 'close') {
+                setUploading(false)
             }
         })
     }
