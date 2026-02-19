@@ -68,6 +68,11 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
               playsInline
               preload="auto"
               crossOrigin="anonymous"
+              onError={(e) => {
+                const error = (e.target as HTMLVideoElement).error
+                console.error("Gallery video error:", error?.code, error?.message)
+              }}
+              onStalled={() => console.warn("Gallery video stalled - buffering")}
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity media-fade-edges"
             />
           ) : (
