@@ -138,13 +138,15 @@ export function MediaLightbox({ item, allItems, onClose, onNavigate }: MediaLigh
                   loop
                   playsInline
                   controls
-                  preload="auto"
+                  preload="metadata"
                   crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
                   onError={(e) => {
                     const error = (e.target as HTMLVideoElement).error
                     console.error("Lightbox video error:", error?.code, error?.message)
                   }}
                   onStalled={() => console.warn("Lightbox video stalled - buffering")}
+                  onLoadedMetadata={() => console.log("Lightbox video metadata loaded")}
                   className="max-w-full max-h-full w-auto h-auto media-fade-edges"
                 />
               ) : (

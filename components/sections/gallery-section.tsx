@@ -28,10 +28,13 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
   const handleMouseEnter = () => {
     setIsHovering(true)
     if (videoRef.current && piece.mediaType === "video") {
+      videoRef.current.currentTime = 0
       const playPromise = videoRef.current.play()
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
-          console.log("Video play interrupted:", error.message)
+          if (error.name !== "NotAllowedError") {
+            console.log("Video play warning:", error.message)
+          }
         })
       }
     }
@@ -42,6 +45,7 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
     if (videoRef.current && piece.mediaType === "video") {
       try {
         videoRef.current.pause()
+        videoRef.current.currentTime = 0
       } catch (error) {
         console.error("Video pause error:", error)
       }
@@ -66,13 +70,15 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
               muted
               loop
               playsInline
-              preload="auto"
+              preload="none"
               crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
               onError={(e) => {
                 const error = (e.target as HTMLVideoElement).error
                 console.error("Gallery video error:", error?.code, error?.message)
               }}
               onStalled={() => console.warn("Gallery video stalled - buffering")}
+              onLoadedData={() => console.log("Gallery video buffered")}
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity media-fade-edges"
             />
           ) : (
