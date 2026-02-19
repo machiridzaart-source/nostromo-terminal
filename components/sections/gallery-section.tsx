@@ -24,19 +24,14 @@ const SORT_OPTIONS = ["NEWEST", "OLDEST", "TITLE", "FEATURED"]
 function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => void }) {
   const [isHovering, setIsHovering] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const playAbortRef = useRef<AbortController | null>(null)
 
   const handleMouseEnter = () => {
     setIsHovering(true)
     if (videoRef.current && piece.mediaType === "video") {
-      playAbortRef.current = new AbortController()
-      const promise = videoRef.current.play()
-      if (promise instanceof Promise) {
-        promise.catch((error) => {
-          // Ignore AbortError exceptions from interruptions
-          if (error.name !== "AbortError") {
-            console.error("Video play error:", error)
-          }
+      const playPromise = videoRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.log("Video play interrupted:", error.message)
         })
       }
     }
@@ -45,13 +40,9 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
   const handleMouseLeave = () => {
     setIsHovering(false)
     if (videoRef.current && piece.mediaType === "video") {
-      // Abort any pending play operation
-      playAbortRef.current?.abort()
       try {
         videoRef.current.pause()
-        videoRef.current.currentTime = 0
       } catch (error) {
-        // Silently ignore errors during cleanup
         console.error("Video pause error:", error)
       }
     }
@@ -75,7 +66,7 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               crossOrigin="anonymous"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity media-fade-edges"
             />
