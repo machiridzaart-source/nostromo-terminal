@@ -48,15 +48,31 @@ export function ContactSection() {
     fetchContent()
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.name || !formData.email || !formData.message) return
+    
     setSending(true)
-    // Simulate transmission
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        setSent(true)
+      } else {
+        const error = await response.json()
+        console.error('Contact submission error:', error)
+        alert('Message transmission failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Contact submit error:', error)
+      alert('Message transmission failed. Please check your connection.')
+    } finally {
       setSending(false)
-      setSent(true)
-    }, 2000)
+    }
   }
 
   return (
