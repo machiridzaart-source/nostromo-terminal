@@ -19,6 +19,7 @@ interface GalleryItem {
 const DEFAULT_COLORS = ["#00ff41", "#003b00"]
 
 const CATEGORIES = ["ALL", "STORYBOARDS", "ANIMATION", "CHARACTER DESIGN", "MISC"]
+const SORT_OPTIONS = ["NEWEST", "OLDEST", "TITLE", "FEATURED"]
 
 function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => void }) {
   const [isHovering, setIsHovering] = useState(false)
@@ -111,6 +112,7 @@ function ArtThumbnail({ piece, onClick }: { piece: GalleryItem; onClick: () => v
 
 export function GallerySection() {
   const [filter, setFilter] = useState("ALL")
+  const [sort, setSort] = useState("NEWEST")
   const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null)
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -137,6 +139,21 @@ export function GallerySection() {
 
   const filtered = filter === "ALL" ? galleryItems : galleryItems.filter((p) => p.category === filter)
 
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sort) {
+      case "NEWEST":
+        return parseInt(b.year) - parseInt(a.year)
+      case "OLDEST":
+        return parseInt(a.year) - parseInt(b.year)
+      case "TITLE":
+        return a.title.localeCompare(b.title)
+      case "FEATURED":
+        return (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+      default:
+        return 0
+    }
+  })
+
   if (loading) return <div className="text-xs text-accent animate-pulse">LOADING GALLERY MODULE...</div>
 
   return (
@@ -146,32 +163,49 @@ export function GallerySection() {
         <h1 className="text-lg text-foreground text-glow-bright font-bold tracking-widest">
           ART GALLERY
         </h1>
-        <span className="text-[10px] text-muted-foreground tracking-wider">{`// ${filtered.length} FILES LOADED`}</span>
+        <span className="text-[10px] text-muted-foreground tracking-wider">{`// ${sorted.length} FILES LOADED`}</span>
       </div>
 
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 panel-border p-2 bg-background/30">
-        <span className="text-[9px] text-muted-foreground tracking-widest mr-2">FILTER:</span>
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setFilter(cat)}
-            className={`text-[10px] px-2 py-1 tracking-wider transition-all ${filter === cat
-              ? "panel-border-bright text-accent text-glow-bright bg-accent/5"
-              : "panel-border text-foreground/50 hover:text-foreground"
-              }`}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* Filter and Sort bar */}
+      <div className="flex flex-col gap-2 panel-border p-2 bg-background/30">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[9px] text-muted-foreground tracking-widest mr-2">FILTER:</span>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`text-[10px] px-2 py-1 tracking-wider transition-all ${filter === cat
+                ? "panel-border-bright text-accent text-glow-bright bg-accent/5"
+                : "panel-border text-foreground/50 hover:text-foreground"
+                }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
+          <span className="text-[9px] text-muted-foreground tracking-widest mr-2">SORT:</span>
+          {SORT_OPTIONS.map((option) => (
+            <button
+              key={option}
+              onClick={() => setSort(option)}
+              className={`text-[10px] px-2 py-1 tracking-wider transition-all ${sort === option
+                ? "panel-border-bright text-accent text-glow-bright bg-accent/5"
+                : "panel-border text-foreground/50 hover:text-foreground"
+                }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Gallery grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {filtered.map((piece) => (
+        {sorted.map((piece) => (
           <ArtThumbnail key={piece.id} piece={piece} onClick={() => setLightboxItem(piece)} />
         ))}
-        {filtered.length === 0 && (
+        {sorted.length === 0 && (
           <div className="col-span-full p-8 text-center text-muted-foreground text-xs border border-dashed border-border">
             NO ARTIFACTS FOUND IN THIS SECTOR
           </div>
@@ -182,7 +216,7 @@ export function GallerySection() {
       {lightboxItem && (
         <MediaLightbox 
           item={lightboxItem} 
-          allItems={filtered}
+          allItems={sorted}
           onClose={() => setLightboxItem(null)}
           onNavigate={setLightboxItem}
         />
