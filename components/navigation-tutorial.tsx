@@ -14,28 +14,28 @@ export function NavigationTutorial({ onComplete, onClose }: NavigationTutorialPr
 
   const steps = [
     {
-      title: "WELCOME TO NOSTROMO TERMINAL",
-      description: "Crew station interface for accessing vessel systems and communications.",
+      title: "WELCOME",
+      description: "Hi, welcome to My Portfolio Terminal.\n\nHere you will find all my works, projects and WIPs",
+      highlight: "center",
+    },
+    {
+      title: "MAIN PAGES",
+      description: "HOME - Main landing page with featured work\nGALLERY - Browse all artwork and visual creations\nPROJECTS - Explore completed projects and portfolio pieces\nABOUT - Learn more about me and my background\nSKILLS - Technical skills and expertise overview\nCONTACT - Reach out to me with inquiries or collaborations",
       highlight: "center",
     },
     {
       title: "NAVIGATION METHOD 1: COMMANDS",
-      description: "Type commands in the terminal input at the bottom:\n\nHOME - Return to main directory\nGALLERY - View art gallery\nPROJECTS - Browse projects\nABOUT - Visit operator profile\nSKILLS - View skill matrix\nCONTACT - Send a message",
+      description: "Type commands in the terminal input at the bottom to navigate between pages. Simply type the page name (HOME, GALLERY, PROJECTS, etc.) and press enter to jump to that section.",
       highlight: "terminal",
     },
     {
       title: "NAVIGATION METHOD 2: SIDEBAR",
-      description: "Use the left sidebar to click on any module. Quick icons provide visual feedback on system status.",
+      description: "Use the left sidebar to click on any section. Quick icons provide visual feedback on current status.",
       highlight: "sidebar",
     },
     {
       title: "HELPFUL COMMANDS",
-      description: "HELP - Show available commands\nCLEAR - Clear terminal output\nSTATUS - View system diagnostics\nVERSION - Check Nostromo version\nLS - List all modules\nTUTORIAL - Show this guide again",
-      highlight: "center",
-    },
-    {
-      title: "WHY THE RETRO LOOK?",
-      description: "This interface channels classic 1980s computer terminals for an immersive experience. The green monospace text, scanlines, and CRT effects create authentic retro vibes while showcasing modern web technology.",
+      description: "HELP - Show available commands\nCLEAR - Clear terminal output\nSTATUS - View system diagnostics\nVERSION - Check version info\nLS - List all pages\nTUTORIAL - Show this guide again",
       highlight: "center",
     },
     {
