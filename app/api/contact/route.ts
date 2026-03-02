@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     // Send email to Jack
     const result = await resend.emails.send({
-      from: 'noreply@retro-art.dev',
+      from: 'noreply@jackmachiridza.space',
       to: 'Jack.machiridza@gmail.com',
       subject: `New Contact Message: ${body.subject || 'No Subject'}`,
       html: `
