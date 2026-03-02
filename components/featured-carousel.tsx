@@ -79,22 +79,9 @@ export function FeaturedCarousel() {
                 // Store full projects for detail view
                 setAllProjects(projectsWithDefaults)
 
-                // Filter featured gallery items
-                const featuredGalleryItems = galleryData.filter((item: any) => item.featured)
-                const galleryItems: FeaturedItem[] = featuredGalleryItems.slice(0, 4).map((item: any) => ({
-                    id: item.id,
-                    title: item.title,
-                    mediaUrl: item.mediaUrl,
-                    mediaType: item.mediaType,
-                    source: "gallery" as const,
-                    category: item.category,
-                    year: item.year,
-                    desc: item.desc
-                }))
-
                 // Filter featured projects
                 const featuredProjects = projectsWithDefaults.filter((p: any) => p.featured)
-                const projectItems: FeaturedItem[] = featuredProjects.slice(0, 4).map((project: any) => ({
+                const projectItems: FeaturedItem[] = featuredProjects.map((project: any) => ({
                     id: project.id,
                     title: project.title,
                     mediaUrl: project.video || project.image,
@@ -105,8 +92,21 @@ export function FeaturedCarousel() {
                     desc: project.desc || ""
                 }))
 
-                // Combine featured items and take first 8
-                const combined = [...projectItems, ...galleryItems].slice(0, 8)
+                // Filter featured gallery items
+                const featuredGalleryItems = galleryData.filter((item: any) => item.featured)
+                const galleryItems: FeaturedItem[] = featuredGalleryItems.map((item: any) => ({
+                    id: item.id,
+                    title: item.title,
+                    mediaUrl: item.mediaUrl,
+                    mediaType: item.mediaType,
+                    source: "gallery" as const,
+                    category: item.category,
+                    year: item.year,
+                    desc: item.desc
+                }))
+
+                // Combine featured items - prioritize projects, then add gallery items to reach limit
+                const combined = [...projectItems, ...galleryItems].slice(0, 12)
                 setItems(combined)
 
                 // Create unified list for lightbox navigation
