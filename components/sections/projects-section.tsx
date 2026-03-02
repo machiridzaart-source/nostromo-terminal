@@ -140,7 +140,7 @@ export function ProjectsSection() {
             <div className="mb-8">
               <div className="text-[9px] text-muted-foreground tracking-widest mb-2">PROJECT BRIEF:</div>
               <p className="text-base text-foreground/80 text-glow leading-relaxed">
-                {selectedProject.description}
+                {selectedProject.desc || selectedProject.description}
               </p>
             </div>
 

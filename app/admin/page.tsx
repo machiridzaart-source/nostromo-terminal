@@ -498,7 +498,7 @@ function ProjectEditor() {
                 <div className="flex justify-between items-center bg-background/30 p-2 border border-border">
                     <h3 className="text-sm font-bold tracking-widest pl-2">PROJECT LIST</h3>
                     <button
-                        onClick={() => { setIsNew(true); setEditingProject({ id: "", title: "", desc: "", tags: [], featured: false, video: "", sections: [] }); }}
+                        onClick={() => { setIsNew(true); setEditingProject({ id: "", title: "", desc: "", tags: [], featured: false, video: "", image: "", link: "", sections: [] }); }}
                         className="bg-accent/10 hover:bg-accent/20 text-accent text-xs px-3 py-1 border border-accent/20"
                     >
                         + NEW PROJECT
