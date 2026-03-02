@@ -260,7 +260,12 @@ function ProjectEditor() {
         try {
             const res = await fetch('/api/projects')
             const data = await res.json()
-            setProjects(data)
+            // Ensure all projects have featured field (default to false if missing)
+            const projectsWithDefaults = data.map((p: any) => ({
+                ...p,
+                featured: p.featured ?? false
+            }))
+            setProjects(projectsWithDefaults)
         } catch (e) {
             console.error(e)
         } finally {
@@ -515,7 +520,10 @@ function ProjectEditor() {
                                     <div className="w-8 h-8 bg-foreground/5 border border-border" />
                                 )}
                                 <div>
-                                    <div className="text-sm font-bold">{p.title}</div>
+                                    <div className="text-sm font-bold flex items-center gap-2">
+                                        {p.title}
+                                        {p.featured && <span className="text-accent text-lg">★</span>}
+                                    </div>
                                     <div className="text-[10px] text-muted-foreground">{p.tags?.join(", ")}</div>
                                 </div>
                             </div>

@@ -70,8 +70,14 @@ export function FeaturedCarousel() {
                 const galleryData = galleryRes.ok ? await galleryRes.json() : []
                 const projectsData = projectsRes.ok ? await projectsRes.json() : []
 
+                // Ensure all projects have featured field (default to false if missing)
+                const projectsWithDefaults = projectsData.map((p: any) => ({
+                    ...p,
+                    featured: p.featured ?? false
+                }))
+
                 // Store full projects for detail view
-                setAllProjects(projectsData)
+                setAllProjects(projectsWithDefaults)
 
                 // Filter featured gallery items
                 const featuredGalleryItems = galleryData.filter((item: any) => item.featured)
@@ -87,7 +93,7 @@ export function FeaturedCarousel() {
                 }))
 
                 // Filter featured projects
-                const featuredProjects = projectsData.filter((p: any) => p.featured)
+                const featuredProjects = projectsWithDefaults.filter((p: any) => p.featured)
                 const projectItems: FeaturedItem[] = featuredProjects.slice(0, 4).map((project: any) => ({
                     id: project.id,
                     title: project.title,
@@ -105,7 +111,7 @@ export function FeaturedCarousel() {
 
                 // Create unified list for lightbox navigation
                 const combinedMediaItems: GalleryLikeItem[] = [
-                    ...projectsData.map((p: any) => ({
+                    ...projectsWithDefaults.map((p: any) => ({
                         id: p.id,
                         title: p.title,
                         category: "PROJECT",
